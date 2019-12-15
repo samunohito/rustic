@@ -6,7 +6,7 @@ interface CompilationOptions {
     }
 
     class Target(triple: String?) : SingleBase(triple), CompilationOptions {
-        override val option: String = "--triple"
+        override val option: String = "--target"
     }
 
     class Profile : SingleBase(), CompilationOptions {

@@ -21,8 +21,9 @@ class OptionBuilder {
 
     fun toList(): List<String> {
         return options
-            .map { it.toString() }
+            .map { it.toList() }
             .filter { it.isNotEmpty() }
+            .flatten()
             .toList()
     }
 

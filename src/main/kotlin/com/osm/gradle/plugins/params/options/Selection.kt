@@ -1,8 +1,8 @@
 package com.osm.gradle.plugins.params.options
 
-import com.osm.gradle.plugins.params.ParamBase
+import com.osm.gradle.plugins.params.RusticConfigurableBase
 
-class Selection : ParamBase() {
+class Selection : RusticConfigurableBase() {
     var lib: Boolean? = null
     var bin: Iterable<String?>? = null
     var bins: Boolean? = null

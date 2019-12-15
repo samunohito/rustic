@@ -3,8 +3,8 @@ package com.osm.gradle.plugins.params
 import groovy.lang.Closure
 import org.gradle.util.Configurable
 
-open class ParamBase : Configurable<Any> {
-    var resolveStrategy = Closure.DELEGATE_ONLY
+open class RusticConfigurableBase : Configurable<Any> {
+    var resolveStrategy = Closure.DELEGATE_FIRST
 
     override fun toString(): String {
         return "[" + javaClass.fields.joinToString(", ") { "${it.name} = ${it.get(this)}" } + "]"

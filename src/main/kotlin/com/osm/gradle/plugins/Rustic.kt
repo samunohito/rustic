@@ -1,25 +1,29 @@
 package com.osm.gradle.plugins
 
 import com.osm.gradle.plugins.params.BuildVariant
-import com.osm.gradle.plugins.params.ProjectBuildOptions
-import com.osm.gradle.plugins.params.ProjectFlavorOptions
-import com.osm.gradle.plugins.params.ProjectOptions
+import com.osm.gradle.plugins.params.project.ProjectBuildOptions
+import com.osm.gradle.plugins.params.project.ProjectFlavorOptions
+import com.osm.gradle.plugins.params.ProjectSettings
 import com.osm.gradle.plugins.params.options.CleanOptions
-import com.osm.gradle.plugins.task.*
+import com.osm.gradle.plugins.params.project.ProjectDefaultOptions
+import com.osm.gradle.plugins.process.*
+import com.osm.gradle.plugins.task.RusticTask
 import groovy.lang.Closure
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
-import org.gradle.api.Task
+import com.osm.gradle.plugins.util.string.*
 
 open class Rustic(val project: Project) {
+    val defaultConfig: ProjectDefaultOptions =
+        ProjectDefaultOptions("")
     val buildTypes: NamedDomainObjectContainer<ProjectBuildOptions> =
         project.container(ProjectBuildOptions::class.java)
     val flavors: NamedDomainObjectContainer<ProjectFlavorOptions> =
         project.container(ProjectFlavorOptions::class.java)
     val variants: NamedDomainObjectContainer<BuildVariant> =
         project.container(BuildVariant::class.java)
-    val projectOptions: ProjectOptions =
-        ProjectOptions("")
+    val projectSettings: ProjectSettings =
+        ProjectSettings()
 
     init {
         createVariants()
@@ -32,8 +36,16 @@ open class Rustic(val project: Project) {
      * (the settings of buildType and flavor take precedence)
      * targetSelection, buildOptions, checkOptions, testOptions, and benchOptions.
      */
-    fun projectOptions(closure: Closure<*>) {
-        projectOptions.configure(closure)
+    fun projectSettings(closure: Closure<*>) {
+        projectSettings.configure(closure)
+        createVariants()
+    }
+
+    /**
+     * TODO:document
+     */
+    fun defaultConfig(closure: Closure<*>) {
+        defaultConfig.configure(closure)
         createVariants()
     }
 
@@ -71,67 +83,92 @@ open class Rustic(val project: Project) {
             buildTypes.add(options)
         }
 
-        buildTypes.all { buildOption ->
-            if (flavors.isNotEmpty()) {
+        // create build variants.
+        if (flavors.isNotEmpty()) {
+            buildTypes.all { buildOption ->
                 flavors.all { flavorOption ->
-                    variants.add(BuildVariant(projectOptions, buildOption, flavorOption))
+                    variants.add(BuildVariant(projectSettings, defaultConfig, buildOption, flavorOption))
                 }
-            } else {
-                variants.add(BuildVariant(projectOptions, buildOption, null))
             }
         }
 
-        createTasks("rustBuild", BuildTargetTask::class.java)
-        createTasks("rustCheck", CheckTargetTask::class.java)
-        createTasks("rustTest", TestTargetTask::class.java)
-        createTasks("rustBench", BenchTargetTask::class.java)
+        createTasks("rustBuild") { BuildTargetTaskProcess(this, it) }
+        createTasks("rustCheck") { CheckTargetTaskProcess(this, it) }
+        createTasks("rustTest") { TestTargetTaskProcess(this, it) }
+        createTasks("rustBench") { BenchTargetTaskProcess(this, it) }
 
         createCleanTasks()
     }
 
-    private fun <T : RustTaskBase> createTasks(category: String, taskClass: Class<T>) {
-        val build = createPlainTask(category)
-        val buildSub = variants
-            .mapNotNull { it.build }
-            .associate { Pair(it, createPlainTask("$category${it.name.capitalize()}")) }
-        buildSub.forEach { (_, task) -> build.dependsOn(task) }
+    private fun createTasks(
+        category: String,
+        processGenerator: (variant: BuildVariant) -> RusticTaskProcessBase
+    ) {
+        val nothingTaskProcess = NothingTaskProcessBase(this, BuildVariant(projectSettings, defaultConfig))
+        val build = RusticTask.obtain(project.tasks, category, nothingTaskProcess)
 
-        variants.all { variant ->
-            buildSub[variant.build]?.dependsOn(RustTaskBase.create(taskClass, category, this@Rustic, variant))
+        if (variants.isNotEmpty()) {
+            val buildSub = variants
+                .mapNotNull { it.build }
+                .associateWith {
+                    val name = it.name.toCamelCase().toCamelCase('-').capitalize()
+                    RusticTask.obtain(
+                        project.tasks,
+                        "$category${name}",
+                        nothingTaskProcess
+                    )
+                }
+            buildSub.forEach { (_, task) -> build.dependsOn(task) }
+
+            variants.all { variant ->
+                val name = variant.getName().toCamelCase().toCamelCase('-').capitalize()
+                buildSub[variant.build]?.dependsOn(
+                    RusticTask.obtain(
+                        project.tasks,
+                        "$category${name}",
+                        processGenerator(variant)
+                    )
+                )
+            }
+        } else {
+            buildTypes
+                .map { processGenerator(BuildVariant(projectSettings, defaultConfig, it, null)) }
+                .forEach {
+                    val name = it.variant.getName().toCamelCase().toCamelCase('-').capitalize()
+                    RusticTask.obtain(
+                        project.tasks,
+                        "$category${name}",
+                        it
+                    )
+                }
         }
-    }
-
-    private fun createPlainTask(name: String): Task {
-        project.tasks.removeIf { it.name == name }
-        val task = project.tasks.create(name)
-        task.group = TASK_GROUP_NAME
-        return task
     }
 
     private fun createCleanTasks() {
         val prefix = "rustClean"
 
-        CleanTargetTask.create(prefix, this, CleanOptions())
+        val process = CleanTargetTaskProcess(this, BuildVariant(projectSettings, defaultConfig), CleanOptions())
+        RusticTask.obtain(project.tasks, prefix, process)
 
-        val docOptions = CleanOptions()
-        docOptions.doc = true
-        CleanTargetTask.create("${prefix}Doc", this, CleanOptions())
-
-        val releaseOptions = CleanOptions()
-        releaseOptions.release = true
-        CleanTargetTask.create("${prefix}Release", this, CleanOptions())
-
-        val cleanTriple = createPlainTask("${prefix}Triple")
-        variants.mapNotNull { it.flavor }.forEach {
-            val opt = CleanOptions()
-            opt.triple = it.triple
-            cleanTriple.dependsOn(
-                CleanTargetTask.create(
-                    "${cleanTriple.name}${it.name.capitalize()}",
-                    this@Rustic,
-                    opt
-                )
-            )
-        }
+//        val docOptions = CleanOptions()
+//        docOptions.doc = true
+//        CleanTargetTask.create("${prefix}Doc", this, CleanOptions())
+//
+//        val releaseOptions = CleanOptions()
+//        releaseOptions.release = true
+//        CleanTargetTask.create("${prefix}Release", this, CleanOptions())
+//
+//        val cleanTriple = TaskUtility.generate(project.tasks,("${prefix}Triple"))
+//        variants.mapNotNull { it.flavor }.forEach {
+//            val opt = CleanOptions()
+//            opt.triple = it.triple
+//            cleanTriple.dependsOn(
+//                CleanTargetTask.create(
+//                    "${cleanTriple.name}${it.name.capitalize()}",
+//                    this@Rustic,
+//                    opt
+//                )
+//            )
+//        }
     }
 }

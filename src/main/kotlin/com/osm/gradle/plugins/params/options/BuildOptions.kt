@@ -1,9 +1,8 @@
 package com.osm.gradle.plugins.params.options
 
-import com.osm.gradle.plugins.params.ParamBase
-import groovy.lang.Closure
+import com.osm.gradle.plugins.params.RusticConfigurableBase
 
-class BuildOptions : ParamBase() {
+class BuildOptions : RusticConfigurableBase() {
     var outputDirectory: String? = null
     var debug: Boolean? = null
 }

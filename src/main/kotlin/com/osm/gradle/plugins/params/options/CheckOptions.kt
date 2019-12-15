@@ -1,8 +1,7 @@
 package com.osm.gradle.plugins.params.options
 
-import com.osm.gradle.plugins.params.ParamBase
-import groovy.lang.Closure
+import com.osm.gradle.plugins.params.RusticConfigurableBase
 
-class CheckOptions : ParamBase() {
+class CheckOptions : RusticConfigurableBase() {
     var profile: String? = null
 }

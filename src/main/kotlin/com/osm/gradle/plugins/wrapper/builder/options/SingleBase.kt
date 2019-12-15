@@ -8,4 +8,8 @@ abstract class SingleBase(private val param: String?) : Base() {
     override fun toString(): String {
         return option + if (param == null) "" else " $param"
     }
+
+    override fun toList(): List<String> {
+        return listOfNotNull(option, param)
+    }
 }

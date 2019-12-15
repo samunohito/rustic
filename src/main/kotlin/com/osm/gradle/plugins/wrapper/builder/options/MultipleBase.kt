@@ -10,4 +10,13 @@ abstract class MultipleBase(private val param: Iterable<String?>?) : Base() {
             ?.joinToString { "$option $it" }
             ?: ""
     }
+
+    override fun toList(): List<String> {
+        val p = param?.filterNotNull()
+        return if (p != null) {
+            listOfNotNull(option).plus(p)
+        } else {
+            listOfNotNull(option)
+        }
+    }
 }

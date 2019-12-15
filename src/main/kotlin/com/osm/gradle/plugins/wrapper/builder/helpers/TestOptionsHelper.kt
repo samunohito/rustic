@@ -1,6 +1,6 @@
 package com.osm.gradle.plugins.wrapper.builder.helpers
 
-import com.osm.gradle.plugins.params.OptionsBase
+import com.osm.gradle.plugins.params.project.OptionsBase
 import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
 import com.osm.gradle.plugins.wrapper.builder.options.TargetSelection
 import com.osm.gradle.plugins.wrapper.builder.options.TestOptions

@@ -9,7 +9,7 @@ class BuildVariant(
     val default: ProjectDefaultOptions?,
     val build: ProjectBuildOptions?,
     val flavor: ProjectFlavorOptions?
-) : RusticConfigurableBase() {
+) {
     fun getOptionsNonNull() = listOfNotNull(default, build, flavor)
     fun getName() = listOfNotNull(build, flavor).joinToString("") { it.name.capitalize() }
 

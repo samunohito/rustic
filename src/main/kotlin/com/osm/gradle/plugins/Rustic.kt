@@ -1,18 +1,28 @@
 package com.osm.gradle.plugins
 
 import com.osm.gradle.plugins.params.BuildVariant
-import com.osm.gradle.plugins.params.project.ProjectBuildOptions
-import com.osm.gradle.plugins.params.project.ProjectFlavorOptions
 import com.osm.gradle.plugins.params.ProjectSettings
 import com.osm.gradle.plugins.params.options.CleanOptions
+import com.osm.gradle.plugins.params.project.ProjectBuildOptions
 import com.osm.gradle.plugins.params.project.ProjectDefaultOptions
+import com.osm.gradle.plugins.params.project.ProjectFlavorOptions
 import com.osm.gradle.plugins.process.*
 import com.osm.gradle.plugins.task.RusticTask
+import com.osm.gradle.plugins.util.string.toCamelCase
 import groovy.lang.Closure
+import org.gradle.api.Action
+import org.gradle.api.DomainObjectSet
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
-import com.osm.gradle.plugins.util.string.*
+import org.gradle.api.internal.CollectionCallbackActionDecorator
+import org.gradle.api.internal.DefaultDomainObjectSet
+import org.gradle.api.internal.DefaultNamedDomainObjectCollection
 
+/**
+ * https://mrhaki.blogspot.com/2016/02/gradle-goodness-using-nested-domain.html
+ * https://mrhaki.blogspot.com/2016/02/gradle-goodness-create-objects-with-dsl.html
+ * https://henteko07.hatenablog.com/entry/2013/11/29/070537
+ */
 open class Rustic(val project: Project) {
     val defaultConfig: ProjectDefaultOptions =
         ProjectDefaultOptions("")
@@ -20,13 +30,19 @@ open class Rustic(val project: Project) {
         project.container(ProjectBuildOptions::class.java)
     val flavors: NamedDomainObjectContainer<ProjectFlavorOptions> =
         project.container(ProjectFlavorOptions::class.java)
-    val variants: NamedDomainObjectContainer<BuildVariant> =
-        project.container(BuildVariant::class.java)
     val projectSettings: ProjectSettings =
-        ProjectSettings()
+        ProjectSettings("")
+    val variants: DomainObjectSet<BuildVariant> =
+        DefaultDomainObjectSet<BuildVariant>(BuildVariant::class.java, CollectionCallbackActionDecorator.NOOP)
 
     init {
-        createVariants()
+        val debugOptions = ProjectBuildOptions("debug")
+        debugOptions.buildOptions.debug = true
+        buildTypes.add(debugOptions)
+
+        val releaseOptions = ProjectBuildOptions("release")
+        releaseOptions.buildOptions.debug = false
+        buildTypes.add(releaseOptions)
     }
 
     /**
@@ -37,16 +53,18 @@ open class Rustic(val project: Project) {
      * targetSelection, buildOptions, checkOptions, testOptions, and benchOptions.
      */
     fun projectSettings(closure: Closure<*>) {
+        log("projectSettings start")
         projectSettings.configure(closure)
-        createVariants()
+        log("projectSettings end")
     }
 
     /**
      * TODO:document
      */
     fun defaultConfig(closure: Closure<*>) {
+        log("defaultConfig start")
         defaultConfig.configure(closure)
-        createVariants()
+        log("defaultConfig end")
     }
 
     /**
@@ -55,8 +73,9 @@ open class Rustic(val project: Project) {
      * (The settings of flavors take precedence)
      */
     fun buildTypes(closure: Closure<*>) {
+        log("buildTypes start")
         buildTypes.configure(closure)
-        createVariants()
+        log("buildTypes end")
     }
 
     /**
@@ -64,33 +83,14 @@ open class Rustic(val project: Project) {
      * In addition, you can set targetSelection, buildOptions, checkOptions, testOptions, and benchOptions.
      */
     fun flavors(closure: Closure<*>) {
+        log("flavors start")
         flavors.configure(closure)
-        createVariants()
+        log("flavors end")
     }
 
-    private fun createVariants() {
+
+    fun createVariants() {
         variants.clear()
-
-        if (buildTypes.none { it.name == "debug" }) {
-            val options = ProjectBuildOptions("debug")
-            options.buildOptions.debug = true
-            buildTypes.add(options)
-        }
-
-        if (buildTypes.none { it.name == "release" }) {
-            val options = ProjectBuildOptions("release")
-            options.buildOptions.debug = false
-            buildTypes.add(options)
-        }
-
-        // create build variants.
-        if (flavors.isNotEmpty()) {
-            buildTypes.all { buildOption ->
-                flavors.all { flavorOption ->
-                    variants.add(BuildVariant(projectSettings, defaultConfig, buildOption, flavorOption))
-                }
-            }
-        }
 
         createTasks("rustBuild") { BuildTargetTaskProcess(this, it) }
         createTasks("rustCheck") { CheckTargetTaskProcess(this, it) }
@@ -98,6 +98,16 @@ open class Rustic(val project: Project) {
         createTasks("rustBench") { BenchTargetTaskProcess(this, it) }
 
         createCleanTasks()
+
+        buildTypes.all { buildOption ->
+            variants.add(BuildVariant(projectSettings, defaultConfig, buildOption, null))
+        }
+
+        flavors.all { flavorOption ->
+            buildTypes.all { buildOption ->
+                variants.add(BuildVariant(projectSettings, defaultConfig, buildOption, flavorOption))
+            }
+        }
     }
 
     private fun createTasks(
@@ -107,40 +117,16 @@ open class Rustic(val project: Project) {
         val nothingTaskProcess = NothingTaskProcessBase(this, BuildVariant(projectSettings, defaultConfig))
         val build = RusticTask.obtain(project.tasks, category, nothingTaskProcess)
 
-        if (variants.isNotEmpty()) {
-            val buildSub = variants
-                .mapNotNull { it.build }
-                .associateWith {
-                    val name = it.name.toCamelCase().toCamelCase('-').capitalize()
-                    RusticTask.obtain(
-                        project.tasks,
-                        "$category${name}",
-                        nothingTaskProcess
-                    )
-                }
-            buildSub.forEach { (_, task) -> build.dependsOn(task) }
-
-            variants.all { variant ->
-                val name = variant.getName().toCamelCase().toCamelCase('-').capitalize()
-                buildSub[variant.build]?.dependsOn(
-                    RusticTask.obtain(
-                        project.tasks,
-                        "$category${name}",
-                        processGenerator(variant)
-                    )
-                )
+        variants.all {
+            val subName = category + it.build?.name?.toCamelCase('-')?.toCamelCase()?.capitalize()
+            val subTask = RusticTask.obtain(project.tasks, subName, nothingTaskProcess)
+            if (it.flavor == null) {
+                build.dependsOn(subTask)
+            } else {
+                val subChildName = subName + it.getName().toCamelCase('-').toCamelCase().capitalize()
+                val subChildTask = RusticTask.obtain(project.tasks, subChildName, processGenerator(it))
+                subTask.dependsOn(subChildTask)
             }
-        } else {
-            buildTypes
-                .map { processGenerator(BuildVariant(projectSettings, defaultConfig, it, null)) }
-                .forEach {
-                    val name = it.variant.getName().toCamelCase().toCamelCase('-').capitalize()
-                    RusticTask.obtain(
-                        project.tasks,
-                        "$category${name}",
-                        it
-                    )
-                }
         }
     }
 
@@ -149,7 +135,7 @@ open class Rustic(val project: Project) {
 
         val process = CleanTargetTaskProcess(this, BuildVariant(projectSettings, defaultConfig), CleanOptions())
         RusticTask.obtain(project.tasks, prefix, process)
-
+//
 //        val docOptions = CleanOptions()
 //        docOptions.doc = true
 //        CleanTargetTask.create("${prefix}Doc", this, CleanOptions())

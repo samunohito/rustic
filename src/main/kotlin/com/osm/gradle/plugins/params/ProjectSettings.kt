@@ -1,6 +1,6 @@
 package com.osm.gradle.plugins.params
 
-class ProjectSettings : RusticConfigurableBase() {
+class ProjectSettings(val name: String) : RusticConfigurableBase() {
     var projectLocation: String? = null
     var manifestPath: String? = null
     var jobs: Int? = null

@@ -1,8 +1,5 @@
 package com.osm.gradle.plugins
 
-import com.osm.gradle.plugins.wrapper.Cargo
-import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
-import com.osm.gradle.plugins.wrapper.builder.options.CompilationOptions
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.After
@@ -27,14 +24,14 @@ class RusticPluginTest {
     fun setUp() {
         buildFile = testProjectDir.newFile("build.gradle")
         dstJarPath = Paths.get(testProjectDir.root.toPath().toString(), srcJarPath.fileName?.toString())
-        Files.copy(srcJarPath,       dstJarPath)
+        Files.copy(srcJarPath, dstJarPath)
     }
 
     @After
     fun tearDown() {
     }
 
-//    @Test
+    //    @Test
     fun apply() {
         val project = ProjectBuilder.builder().build()
         project.apply {
@@ -58,7 +55,11 @@ rustic {
     projectSettings {
         projectLocation "${testProjectDir.root}"
     }
-    
+  
+    defaultConfig {
+        enabled = true
+    }
+     
     buildTypes {
         debug {
             target = "x86_64-unknown-linux-gnu"
@@ -74,7 +75,7 @@ rustic {
             }
         }
     }
-
+    
     flavors {
         "i686-pc-windows-gnu" {
             target "i686-pc-windows-gnu"
@@ -88,8 +89,9 @@ rustic {
                     STRIP : "/usr/bin/i686-w64-mingw32-strip"
             ]
         }
-
+ 
         "x86_64-pc-windows-gnu" {
+            enabled = false
             target "x86_64-pc-windows-gnu"
             environments = [
                     AR    : "/usr/bin/x86_64-w64-mingw32-ar",
@@ -102,11 +104,10 @@ rustic {
             ]
         }
     }
-
-    variants.all {
-        println(Thread.currentThread().getStackTrace())
-        println(it)
-    }
+ 
+     variants.all {
+        println(it.name + " " + it.enabled)
+     }
 }
         """
         )

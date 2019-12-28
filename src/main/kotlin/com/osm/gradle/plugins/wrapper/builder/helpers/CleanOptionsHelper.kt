@@ -1,10 +1,11 @@
 package com.osm.gradle.plugins.wrapper.builder.helpers
 
+import com.osm.gradle.plugins.types.interfaces.options.ICleanOptions
 import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
 import com.osm.gradle.plugins.wrapper.builder.options.CleanOptions
 
 class CleanOptionsHelper {
-    fun put(opt: com.osm.gradle.plugins.params.options.CleanOptions?, builder: OptionBuilder) {
+    fun put(opt: ICleanOptions?, builder: OptionBuilder) {
         opt?.apply {
             doc?.also {
                 if (it) {

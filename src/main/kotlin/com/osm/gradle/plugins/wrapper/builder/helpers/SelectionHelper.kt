@@ -1,17 +1,17 @@
 package com.osm.gradle.plugins.wrapper.builder.helpers
 
-import com.osm.gradle.plugins.params.project.OptionsBase
-import com.osm.gradle.plugins.params.options.Selection
+import com.osm.gradle.plugins.types.interfaces.IConfigBase
+import com.osm.gradle.plugins.types.interfaces.options.ISelection
 import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
 import com.osm.gradle.plugins.wrapper.builder.options.Base
 import com.osm.gradle.plugins.wrapper.builder.options.TargetSelection
 
 class SelectionHelper : BuilderHelper {
-    override fun put(opt: OptionsBase?, builder: OptionBuilder) {
+    override fun put(opt: IConfigBase?, builder: OptionBuilder) {
         put(opt?.targetSelection, builder)
     }
 
-    fun put(sel: Selection?, builder: OptionBuilder) {
+    fun put(sel: ISelection?, builder: OptionBuilder) {
         sel?.apply {
             select(builder, lib, null, { TargetSelection.Lib() }, null)
             select(builder, bins, bin, { TargetSelection.Bins() }, { TargetSelection.Bin(it) })

@@ -1,13 +1,6 @@
-package com.osm.gradle.plugins.params
+package com.osm.gradle.plugins.util.objects
 
-import groovy.lang.Closure
-import org.gradle.util.Configurable
-import java.lang.StringBuilder
-import java.lang.reflect.Field
-
-open class RusticConfigurableBase : Configurable<Any> {
-    var resolveStrategy = Closure.DELEGATE_FIRST
-
+abstract class FieldPrintable {
     override fun toString(): String {
         val fields = javaClass.declaredFields.toMutableList()
 
@@ -28,14 +21,5 @@ open class RusticConfigurableBase : Configurable<Any> {
         }
 
         return "[" + ret.joinToString(", ") + "]"
-    }
-
-    override fun configure(closure: Closure<*>?): Any {
-        closure?.also {
-            it.delegate = this
-            it.resolveStrategy = resolveStrategy
-            it.run()
-        }
-        return this
     }
 }

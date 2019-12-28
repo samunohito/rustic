@@ -1,12 +1,12 @@
 package com.osm.gradle.plugins.wrapper.builder.helpers
 
-import com.osm.gradle.plugins.params.project.OptionsBase
+import com.osm.gradle.plugins.types.interfaces.IConfigBase
 import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
 import com.osm.gradle.plugins.wrapper.builder.options.TargetSelection
 import com.osm.gradle.plugins.wrapper.builder.options.TestOptions
 
 class TestOptionsHelper : BuilderHelper {
-    override fun put(opt: OptionsBase?, builder: OptionBuilder) {
+    override fun put(opt: IConfigBase?, builder: OptionBuilder) {
         opt?.testOptions?.apply {
             noRun?.also {
                 if (it) {

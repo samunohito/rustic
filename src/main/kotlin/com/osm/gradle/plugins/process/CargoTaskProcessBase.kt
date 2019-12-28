@@ -1,37 +1,43 @@
 package com.osm.gradle.plugins.process
 
-import com.osm.gradle.plugins.Rustic
-import com.osm.gradle.plugins.params.BuildVariant
-import com.osm.gradle.plugins.util.log.info
+import com.osm.gradle.plugins.types.ProjectSettings
+import com.osm.gradle.plugins.types.variants.BuildVariant
 import com.osm.gradle.plugins.wrapper.Cargo
+import org.gradle.api.Project
 import java.nio.file.Paths
 
-abstract class CargoTaskProcessBase(rustic: Rustic, variant: BuildVariant) : RusticTaskProcessBase(rustic, variant) {
+abstract class CargoTaskProcessBase(
+    val project: Project,
+    val settings: ProjectSettings,
+    val variant: BuildVariant
+) : IRusticTaskProcess {
+
     override fun run() {
-        call(createCargo())
+        if (variant.enabled == true || variant.enabled == null) {
+            call(createCargo())
+        } else {
+            println("The task associated with ${variant.name} has been disabled.")
+        }
     }
 
     private fun createCargo(): Cargo {
-        info(variant.toString())
-
         val cargo = Cargo()
 
-        val projectPath = rustic.project.projectDir.toPath().toAbsolutePath()
-        val location = variant.project.projectLocation
-        if (location != null) {
-            val path = Paths.get(location)
-            cargo.workingDirectory = if (path.isAbsolute) {
-                path
+        val projectPath = project.projectDir.toPath().toAbsolutePath()
+        val location = settings.projectLocation?.let { Paths.get(it) }
+
+        val workingDirectory = if (location != null) {
+            if (location.isAbsolute) {
+                location
             } else {
-                Paths.get(projectPath.toString(), path.toString()).toAbsolutePath()
+                Paths.get(projectPath.toString(), location.toString()).toAbsolutePath()
             }
         } else {
-            cargo.workingDirectory = projectPath
+            projectPath
         }
 
-        variant.default?.also { cargo.additionalEnvironment.putAll(it.environments) }
-        variant.build?.also { cargo.additionalEnvironment.putAll(it.environments) }
-        variant.flavor?.also { cargo.additionalEnvironment.putAll(it.environments) }
+        cargo.workingDirectory = workingDirectory
+        cargo.additionalEnvironment.putAll(variant.environments)
 
         return cargo
     }

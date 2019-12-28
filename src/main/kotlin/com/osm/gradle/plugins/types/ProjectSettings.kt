@@ -1,4 +1,4 @@
-package com.osm.gradle.plugins.params
+package com.osm.gradle.plugins.types
 
 class ProjectSettings(val name: String) : RusticConfigurableBase() {
     var projectLocation: String? = null

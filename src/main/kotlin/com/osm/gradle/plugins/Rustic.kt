@@ -8,6 +8,7 @@ import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import groovy.lang.Closure
+import org.gradle.api.Action
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
@@ -28,13 +29,17 @@ open class Rustic(val project: Project) {
         project.container(ProductFlavorConfig::class.java)
     val projectSettings: ProjectSettings =
         ProjectSettings("")
+
     val variants: DomainObjectSet<BuildVariant> =
         DefaultDomainObjectSet<BuildVariant>(BuildVariant::class.java, CollectionCallbackActionDecorator.NOOP)
 
     private val taskGenerator = TaskGenerator(project, projectSettings)
+    private val variantManager = VariantManager(projectSettings, defaultConfig)
 
     init {
-        variants.clear()
+        variantManager.clearCallbacks()
+        variantManager.clearBuildTypes()
+        variantManager.clearFlavors()
 
         RusticTask.disableAll(project.tasks)
 
@@ -46,19 +51,19 @@ open class Rustic(val project: Project) {
         releaseOptions.buildOptions.debug = false
         buildTypes.add(releaseOptions)
 
-        buildTypes.all { buildOption ->
-            variants.add(BuildVariant(projectSettings, defaultConfig, buildOption, null))
+        buildTypes.all { buildType ->
+            variantManager.addBuildType(buildType)
         }
 
-        flavors.all { flavorOption ->
-            buildTypes.all { buildOption ->
-                variants.add(BuildVariant(projectSettings, defaultConfig, buildOption, flavorOption))
-            }
+        flavors.all { flavor ->
+            variantManager.addFlavor(flavor)
         }
 
-        variants.all {
+        variantManager.addCallback(Action {
             taskGenerator.createTasks(it)
-        }
+            variants.clear()
+            variants.addAll(it)
+        })
     }
 
     /**

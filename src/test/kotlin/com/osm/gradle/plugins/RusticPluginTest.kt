@@ -31,7 +31,7 @@ class RusticPluginTest {
     fun tearDown() {
     }
 
-    //    @Test
+        @Test
     fun apply() {
         val project = ProjectBuilder.builder().build()
         project.apply {
@@ -39,7 +39,7 @@ class RusticPluginTest {
         }
     }
 
-    @Test
+//    @Test
     fun applyBlock() {
         buildFile?.writeText(
             """
@@ -104,10 +104,6 @@ rustic {
             ]
         }
     }
- 
-     variants.all {
-        println(it.name + " " + it.enabled)
-     }
 }
         """
         )

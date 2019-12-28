@@ -17,23 +17,27 @@ class TaskGenerator(
         createCleanTasks()
     }
 
-    fun createTasks(variant: BuildVariant) {
-        createTasks("rustBuild", variant, BuildTargetTaskProcess(project, settings, variant))
-        createTasks("rustCheck", variant, CheckTargetTaskProcess(project, settings, variant))
-        createTasks("rustTest", variant, TestTargetTaskProcess(project, settings, variant))
-        createTasks("rustBench", variant, BenchTargetTaskProcess(project, settings, variant))
+    fun createTasks(variants: List<BuildVariant>) {
+        variants.forEach { createTask(it) }
     }
 
-    private fun createTasks(category: String, variant: BuildVariant, process: IRusticTaskProcess) {
-        val root = RusticTask.obtain(project.tasks, category, nothingTaskProcess)
+    fun createTask(variant: BuildVariant) {
+        createTask("rustBuild", variant, BuildTargetTaskProcess(project, settings, variant))
+        createTask("rustCheck", variant, CheckTargetTaskProcess(project, settings, variant))
+        createTask("rustTest", variant, TestTargetTaskProcess(project, settings, variant))
+        createTask("rustBench", variant, BenchTargetTaskProcess(project, settings, variant))
+    }
 
+    private fun createTask(category: String, variant: BuildVariant, process: IRusticTaskProcess) {
+        val root = RusticTask.obtain(project.tasks, category, nothingTaskProcess)
         if (variant.flavor == null) {
-            val subTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), nothingTaskProcess)
+            val subTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), process)
             root.dependsOn(subTask)
         } else {
             val subTask = RusticTask.obtain(project.tasks, getParentTaskName(category, variant), nothingTaskProcess)
             val subChildTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), process)
             subTask.dependsOn(subChildTask)
+            root.dependsOn(subTask)
         }
     }
 

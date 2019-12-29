@@ -6,8 +6,13 @@ import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import org.gradle.api.Action
+import org.gradle.api.Project
 
-class VariantManager(private val projectSettings: ProjectSettings, private val defaultConfig: DefaultConfig?) {
+class VariantConfigure(
+    private val project: Project,
+    private val projectSettings: ProjectSettings,
+    private val defaultConfig: DefaultConfig?
+) {
     private val buildTypes = ArrayList<BuildTypeConfig>()
     private val flavors = ArrayList<ProductFlavorConfig>()
     private val callbacks = ArrayList<Action<List<BuildVariant>>>()
@@ -50,13 +55,13 @@ class VariantManager(private val projectSettings: ProjectSettings, private val d
         flavors.clear()
     }
 
-    fun configure() {
+    private fun configure() {
         val tmp = if (flavors.isEmpty()) {
-            buildTypes.map { BuildVariant(projectSettings, defaultConfig, it, null) }
+            buildTypes.map { BuildVariant(project, projectSettings, defaultConfig, it, null) }
         } else {
             buildTypes.flatMap { buildType ->
                 flavors.map { flavor ->
-                    BuildVariant(projectSettings, defaultConfig, buildType, flavor)
+                    BuildVariant(project, projectSettings, defaultConfig, buildType, flavor)
                 }
             }
         }

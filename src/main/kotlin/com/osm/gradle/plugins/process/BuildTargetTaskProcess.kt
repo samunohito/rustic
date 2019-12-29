@@ -19,6 +19,7 @@ open class BuildTargetTaskProcess(
         val builder = OptionBuilder()
 
         OptionsHelper().put(variant, builder)
+        OptionsHelper().put(settings, builder)
         SelectionHelper().put(variant, builder)
         BuildOptionsHelper().put(variant, builder)
 

@@ -8,6 +8,7 @@ import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import groovy.lang.Closure
+import groovy.lang.GroovyObjectSupport
 import org.gradle.api.Action
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.NamedDomainObjectContainer
@@ -20,7 +21,7 @@ import org.gradle.api.internal.DefaultDomainObjectSet
  * https://mrhaki.blogspot.com/2016/02/gradle-goodness-create-objects-with-dsl.html
  * https://henteko07.hatenablog.com/entry/2013/11/29/070537
  */
-open class Rustic(val project: Project) {
+open class Rustic(val project: Project) : GroovyObjectSupport() {
     val defaultConfig: DefaultConfig =
         DefaultConfig()
     val buildTypes: NamedDomainObjectContainer<BuildTypeConfig> =
@@ -28,20 +29,32 @@ open class Rustic(val project: Project) {
     val flavors: NamedDomainObjectContainer<ProductFlavorConfig> =
         project.container(ProductFlavorConfig::class.java)
     val projectSettings: ProjectSettings =
-        ProjectSettings("")
+        ProjectSettings()
 
     val variants: DomainObjectSet<BuildVariant> =
         DefaultDomainObjectSet<BuildVariant>(BuildVariant::class.java, CollectionCallbackActionDecorator.NOOP)
 
     private val taskGenerator = TaskGenerator(project, projectSettings)
-    private val variantManager = VariantManager(projectSettings, defaultConfig)
+    private val variantManager = VariantConfigure(project, projectSettings, defaultConfig)
 
     init {
         variantManager.clearCallbacks()
         variantManager.clearBuildTypes()
         variantManager.clearFlavors()
+        variantManager.addCallback(Action {
+            taskGenerator.createTasks(it)
+            variants.clear()
+            variants.addAll(it)
+        })
+
+        project.extensions.add("projectSettings", projectSettings)
+        project.extensions.add("defaultConfig", defaultConfig)
+        project.extensions.add("buildTypes", buildTypes)
+        project.extensions.add("flavors", flavors)
+        project.extensions.add("variants", variants)
 
         RusticTask.disableAll(project.tasks)
+        taskGenerator.createCleanTasks()
 
         val debugOptions = BuildTypeConfig("debug")
         debugOptions.buildOptions.debug = true
@@ -58,12 +71,6 @@ open class Rustic(val project: Project) {
         flavors.all { flavor ->
             variantManager.addFlavor(flavor)
         }
-
-        variantManager.addCallback(Action {
-            taskGenerator.createTasks(it)
-            variants.clear()
-            variants.addAll(it)
-        })
     }
 
     /**

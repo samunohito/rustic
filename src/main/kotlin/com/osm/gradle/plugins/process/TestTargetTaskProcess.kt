@@ -19,6 +19,7 @@ open class TestTargetTaskProcess(
         val builder = OptionBuilder()
 
         OptionsHelper().put(variant, builder)
+        OptionsHelper().put(settings, builder)
         SelectionHelper().put(variant, builder)
         TestOptionsHelper().put(variant, builder)
 

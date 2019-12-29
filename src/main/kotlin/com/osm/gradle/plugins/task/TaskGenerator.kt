@@ -1,10 +1,10 @@
 package com.osm.gradle.plugins.task
 
 import com.osm.gradle.plugins.process.*
+import com.osm.gradle.plugins.process.BenchTargetTaskProcess
 import com.osm.gradle.plugins.types.ProjectSettings
 import com.osm.gradle.plugins.types.config.options.CleanOptions
 import com.osm.gradle.plugins.types.variants.BuildVariant
-import org.gradle.api.DomainObjectSet
 import org.gradle.api.Project
 
 class TaskGenerator(
@@ -12,10 +12,6 @@ class TaskGenerator(
     private val settings: ProjectSettings
 ) {
     private val nothingTaskProcess = NothingTaskProcess()
-
-    init {
-        createCleanTasks()
-    }
 
     fun createTasks(variants: List<BuildVariant>) {
         variants.forEach { createTask(it) }
@@ -41,10 +37,10 @@ class TaskGenerator(
         }
     }
 
-    private fun createCleanTasks() {
+    fun createCleanTasks() {
         val prefix = "rustClean"
 
-        val process = CleanTargetTaskProcess(project, settings, BuildVariant(settings), CleanOptions())
+        val process = CleanTargetTaskProcess(project, settings, BuildVariant(project, settings), CleanOptions())
         RusticTask.obtain(project.tasks, prefix, process)
 //
 //        val docOptions = CleanOptions()

@@ -11,11 +11,16 @@ import com.osm.gradle.plugins.types.variants.options.BenchOptions
 import com.osm.gradle.plugins.types.variants.options.BuildOptions
 import com.osm.gradle.plugins.types.variants.options.Selection
 import com.osm.gradle.plugins.types.variants.options.TestOptions
+import com.osm.gradle.plugins.util.other.Common
 import com.osm.gradle.plugins.util.string.toCamelCase
+import org.gradle.api.Project
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 
 class BuildVariant(
-    val project: ProjectSettings,
+    val project: Project,
+    val settings: ProjectSettings,
     val default: DefaultConfig?,
     val build: BuildTypeConfig?,
     val flavor: ProductFlavorConfig?
@@ -69,12 +74,29 @@ class BuildVariant(
             return tmpList.take(tmpList.size - 1).joinToString("").capitalize()
         }
 
-    constructor(project: ProjectSettings) : this(project, null, null, null)
+    val outputPath: Path
+        get() {
+            val intermediates = if (targetDir != null) {
+                Paths.get(targetDir!!)
+            } else {
+                Paths.get(Common.getWorkingDirectory(project.projectDir, settings.projectLocation).toString(), "target")
+            }
+
+            val buildTypeString = if (buildOptions.debug == false) "release" else "debug";
+
+            return if (target != null) {
+                Paths.get(intermediates.toString(), target, buildTypeString)
+            } else {
+                Paths.get(intermediates.toString(), buildTypeString)
+            }
+        }
+
+    constructor(project: Project, settings: ProjectSettings) : this(project, settings, null, null, null)
 
     override fun toString(): String {
         return if (DEBUG) {
             StringBuilder()
-                .append("project = $project").append("\n")
+                .append("project = $settings").append("\n")
                 .append("default = $default").append("\n")
                 .append("build   = $build").append("\n")
                 .append("flavor  = $flavor").append("\n")

@@ -8,7 +8,6 @@ import com.osm.gradle.plugins.wrapper.builder.helpers.BenchOptionsHelper
 import com.osm.gradle.plugins.wrapper.builder.helpers.OptionsHelper
 import com.osm.gradle.plugins.wrapper.builder.helpers.SelectionHelper
 import org.gradle.api.Project
-import java.nio.file.Path
 
 open class BenchTargetTaskProcess(
     project: Project,
@@ -19,6 +18,7 @@ open class BenchTargetTaskProcess(
         val builder = OptionBuilder()
 
         OptionsHelper().put(variant, builder)
+        OptionsHelper().put(settings, builder)
         SelectionHelper().put(variant, builder)
         BenchOptionsHelper().put(variant, builder)
 

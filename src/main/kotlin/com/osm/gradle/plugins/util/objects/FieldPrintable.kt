@@ -1,11 +1,14 @@
 package com.osm.gradle.plugins.util.objects
 
-abstract class FieldPrintable {
+import groovy.lang.GroovyObjectSupport
+
+abstract class FieldPrintable : GroovyObjectSupport() {
+    protected val DEPTH = 30
     override fun toString(): String {
         val fields = javaClass.declaredFields.toMutableList()
 
         var superClazz: Class<*>? = javaClass.superclass
-        while (superClazz != null) {
+        while (superClazz != null && DEPTH > fields.size) {
             fields.addAll(superClazz.declaredFields)
             superClazz = superClazz.superclass
         }

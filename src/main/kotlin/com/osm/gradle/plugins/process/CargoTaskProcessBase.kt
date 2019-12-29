@@ -2,9 +2,9 @@ package com.osm.gradle.plugins.process
 
 import com.osm.gradle.plugins.types.ProjectSettings
 import com.osm.gradle.plugins.types.variants.BuildVariant
+import com.osm.gradle.plugins.util.other.Common
 import com.osm.gradle.plugins.wrapper.Cargo
 import org.gradle.api.Project
-import java.nio.file.Paths
 
 abstract class CargoTaskProcessBase(
     val project: Project,
@@ -23,20 +23,7 @@ abstract class CargoTaskProcessBase(
     private fun createCargo(): Cargo {
         val cargo = Cargo()
 
-        val projectPath = project.projectDir.toPath().toAbsolutePath()
-        val location = settings.projectLocation?.let { Paths.get(it) }
-
-        val workingDirectory = if (location != null) {
-            if (location.isAbsolute) {
-                location
-            } else {
-                Paths.get(projectPath.toString(), location.toString()).toAbsolutePath()
-            }
-        } else {
-            projectPath
-        }
-
-        cargo.workingDirectory = workingDirectory
+        cargo.workingDirectory = Common.getWorkingDirectory(project.projectDir, settings.projectLocation)
         cargo.additionalEnvironment.putAll(variant.environments)
 
         return cargo

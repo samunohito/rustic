@@ -1,13 +1,12 @@
 package com.osm.gradle.plugins.types.config
 
 import com.osm.gradle.plugins.types.RusticConfigurableBase
+import com.osm.gradle.plugins.types.config.options.*
 import com.osm.gradle.plugins.types.interfaces.IConfigBase
-import com.osm.gradle.plugins.types.config.options.BenchOptions
-import com.osm.gradle.plugins.types.config.options.BuildOptions
-import com.osm.gradle.plugins.types.config.options.CheckOptions
-import com.osm.gradle.plugins.types.config.options.Selection
-import com.osm.gradle.plugins.types.config.options.TestOptions
 import groovy.lang.Closure
+import groovy.lang.MissingPropertyException
+import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.internal.extensibility.DefaultExtraPropertiesExtension
 
 abstract class ConfigBase(override val name: String) : RusticConfigurableBase(), IConfigBase {
     override var enabled: Boolean? = true
@@ -21,6 +20,8 @@ abstract class ConfigBase(override val name: String) : RusticConfigurableBase(),
     override val checkOptions: CheckOptions = CheckOptions()
     override val testOptions: TestOptions = TestOptions()
     override val benchOptions: BenchOptions = BenchOptions()
+
+    val ext = DefaultExtraPropertiesExtension()
 
     fun enabled(value: Boolean?) {
         enabled = value
@@ -60,5 +61,17 @@ abstract class ConfigBase(override val name: String) : RusticConfigurableBase(),
 
     fun benchOptions(closure: Closure<*>) {
         benchOptions.configure(closure)
+    }
+
+    fun ext (closure: Closure<*>) {
+        closure.resolveStrategy = Closure.DELEGATE_FIRST
+
+        try {
+            closure.delegate = ext
+            closure.run()
+        } catch (ex: MissingPropertyException) {
+            closure.delegate = this
+            closure.run()
+        }
     }
 }

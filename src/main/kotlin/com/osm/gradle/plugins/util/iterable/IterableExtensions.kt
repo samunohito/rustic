@@ -1,4 +1,4 @@
-package com.osm.gradle.plugins.util
+package com.osm.gradle.plugins.util.iterable
 
 object IterableExtensions {
     fun <T> Iterable<T>.concat(tail: Iterable<T>): Iterable<T> {

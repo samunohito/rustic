@@ -1,6 +1,6 @@
 package com.osm.gradle.plugins.wrapper
 
-import com.osm.gradle.plugins.util.IterableExtensions.concat
+import com.osm.gradle.plugins.util.iterable.IterableExtensions.concat
 import com.osm.gradle.plugins.util.process.Processing
 import com.osm.gradle.plugins.util.process.ProcessingFailedException
 import com.osm.gradle.plugins.util.process.ProcessingParameters

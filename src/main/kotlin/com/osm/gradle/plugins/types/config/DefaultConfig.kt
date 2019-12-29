@@ -1,3 +1,3 @@
 package com.osm.gradle.plugins.types.config
 
-class DefaultConfig : ConfigBase("")
+open class DefaultConfig : ConfigBase("")

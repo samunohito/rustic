@@ -1,19 +1,19 @@
 package com.osm.gradle.plugins.types
 
-class ProjectSettings(val name: String) : RusticConfigurableBase() {
-    var projectLocation: String? = null
-    var manifestPath: String? = null
-    var jobs: Int? = null
+open class ProjectSettings : RusticConfigurableBase() {
+    open var projectLocation: String? = null
+    open var manifestPath: String? = null
+    open var jobs: Int? = null
 
-    fun projectLocation(value: String?) {
+    open fun projectLocation(value: String?) {
         projectLocation = value
     }
 
-    fun manifestPath(value: String?) {
+    open fun manifestPath(value: String?) {
         manifestPath = value
     }
 
-    fun jobs(value: Int?) {
+    open fun jobs(value: Int?) {
         jobs = value
     }
 }

@@ -4,6 +4,7 @@ import com.osm.gradle.plugins.task.RusticTask
 import com.osm.gradle.plugins.task.TaskGenerator
 import com.osm.gradle.plugins.types.ProjectSettings
 import com.osm.gradle.plugins.types.config.BuildTypeConfig
+import com.osm.gradle.plugins.types.config.ConfigBase
 import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.variants.BuildVariant
@@ -25,9 +26,9 @@ open class Rustic(val project: Project) : GroovyObjectSupport() {
     val defaultConfig: DefaultConfig =
         DefaultConfig()
     val buildTypes: NamedDomainObjectContainer<BuildTypeConfig> =
-        project.container(BuildTypeConfig::class.java)
+        project.container(BuildTypeConfig::class.java, ConfigBase.Factory(project, BuildTypeConfig::class.java))
     val flavors: NamedDomainObjectContainer<ProductFlavorConfig> =
-        project.container(ProductFlavorConfig::class.java)
+        project.container(ProductFlavorConfig::class.java, ConfigBase.Factory(project, ProductFlavorConfig::class.java))
     val projectSettings: ProjectSettings =
         ProjectSettings()
 
@@ -56,11 +57,11 @@ open class Rustic(val project: Project) : GroovyObjectSupport() {
         RusticTask.disableAll(project.tasks)
         taskGenerator.createCleanTasks()
 
-        val debugOptions = BuildTypeConfig("debug")
+        val debugOptions = ConfigBase.Factory(project, BuildTypeConfig::class.java).create("debug")
         debugOptions.buildOptions.debug = true
         buildTypes.add(debugOptions)
 
-        val releaseOptions = BuildTypeConfig("release")
+        val releaseOptions = ConfigBase.Factory(project, BuildTypeConfig::class.java).create("release")
         releaseOptions.buildOptions.debug = false
         buildTypes.add(releaseOptions)
 

@@ -31,7 +31,7 @@ class RusticPluginTest {
     fun tearDown() {
     }
 
-        @Test
+      //  @Test
     fun apply() {
         val project = ProjectBuilder.builder().build()
         project.apply {
@@ -39,7 +39,7 @@ class RusticPluginTest {
         }
     }
 
-//    @Test
+    @Test
     fun applyBlock() {
         buildFile?.writeText(
             """
@@ -102,6 +102,15 @@ rustic {
                     RANLIB: "/usr/bin/x86_64-w64-mingw32-ranlib",
                     STRIP : "/usr/bin/x86_64-w64-mingw32-strip"
             ]
+            ext {
+                hogeeeeee = "pipipipi"
+            }
+        }
+        
+        variants.all {
+            if (it.flavor.hasProperty("hogeeeeee")) {
+                println(it.flavor.hogeeeeee)
+            }
         }
     }
 }

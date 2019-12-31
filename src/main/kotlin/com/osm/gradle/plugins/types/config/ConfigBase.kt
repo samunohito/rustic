@@ -5,7 +5,10 @@ import com.osm.gradle.plugins.types.config.options.*
 import com.osm.gradle.plugins.types.interfaces.IConfigBase
 import groovy.lang.Closure
 import groovy.lang.MissingPropertyException
-import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.api.NamedDomainObjectFactory
+import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.internal.extensibility.DefaultExtraPropertiesExtension
 
 abstract class ConfigBase(override val name: String) : RusticConfigurableBase(), IConfigBase {
@@ -21,57 +24,49 @@ abstract class ConfigBase(override val name: String) : RusticConfigurableBase(),
     override val testOptions: TestOptions = TestOptions()
     override val benchOptions: BenchOptions = BenchOptions()
 
-    val ext = DefaultExtraPropertiesExtension()
-
-    fun enabled(value: Boolean?) {
+    open fun enabled(value: Boolean?) {
         enabled = value
     }
 
-    fun targetDir(value: String?) {
+    open fun targetDir(value: String?) {
         targetDir = value
     }
 
-    fun environments(map: Map<String, String>) {
+    open fun environments(map: Map<String, String>) {
         environments = map
     }
 
-    fun target(value: String?) {
+    open fun target(value: String?) {
         this.target = value
     }
 
-    fun features(value: Iterable<String>?) {
+    open fun features(value: Iterable<String>?) {
         this.features = value
     }
 
-    fun targetSelection(closure: Closure<*>) {
+    open fun targetSelection(closure: Closure<*>) {
         targetSelection.configure(closure)
     }
 
-    fun buildOptions(closure: Closure<*>) {
+    open fun buildOptions(closure: Closure<*>) {
         buildOptions.configure(closure)
     }
 
-    fun checkOptions(closure: Closure<*>) {
+    open fun checkOptions(closure: Closure<*>) {
         checkOptions.configure(closure)
     }
 
-    fun testOptions(closure: Closure<*>) {
+    open fun testOptions(closure: Closure<*>) {
         testOptions.configure(closure)
     }
 
-    fun benchOptions(closure: Closure<*>) {
+    open fun benchOptions(closure: Closure<*>) {
         benchOptions.configure(closure)
     }
 
-    fun ext (closure: Closure<*>) {
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-
-        try {
-            closure.delegate = ext
-            closure.run()
-        } catch (ex: MissingPropertyException) {
-            closure.delegate = this
-            closure.run()
+    class Factory<T : ConfigBase>(private val project: Project, private val type: Class<T>) : NamedDomainObjectFactory<T> {
+        override fun create(name: String): T {
+            return project.extensions.create(name, type, name)
         }
     }
 }

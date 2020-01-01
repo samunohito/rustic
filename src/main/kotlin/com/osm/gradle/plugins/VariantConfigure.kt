@@ -55,6 +55,7 @@ class VariantConfigure(
         flavors.clear()
     }
 
+    @Synchronized
     private fun configure() {
         val tmp = if (flavors.isEmpty()) {
             buildTypes.map { BuildVariant(project, projectSettings, defaultConfig, it, null) }
@@ -66,7 +67,6 @@ class VariantConfigure(
             }
         }
 
-        val ret = tmp.filter { it.enabled ?: true }
-        callbacks.forEach { it.execute(ret) }
+        callbacks.forEach { it.execute(tmp) }
     }
 }

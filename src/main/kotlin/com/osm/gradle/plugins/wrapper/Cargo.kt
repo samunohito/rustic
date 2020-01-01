@@ -4,7 +4,7 @@ import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class Cargo : Base() {
+class Cargo : RustToolBase() {
     override val executable: String = "cargo"
 
     fun build(options: OptionBuilder = OptionBuilder()): String {

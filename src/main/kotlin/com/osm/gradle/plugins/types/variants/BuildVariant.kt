@@ -31,12 +31,14 @@ class BuildVariant(
     override val enabled: Boolean?
         get() = resolve { it.enabled }
     override val name: String
-        get() = targets
-            .reversed()
-            .filterNotNull().joinToString("") {
-                it.name.toCamelCase('-').toCamelCase().capitalize()
-            }
-            .capitalize()
+        get() {
+            return targets
+                .reversed()
+                .filterNotNull().joinToString("") {
+                    it.name.toCamelCase('-').toCamelCase().capitalize()
+                }
+                .capitalize()
+        }
     override val targetDir: String?
         get() = resolve { it.targetDir }
     override val environments: MutableMap<String, String>

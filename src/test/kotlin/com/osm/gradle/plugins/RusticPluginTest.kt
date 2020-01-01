@@ -1,5 +1,8 @@
 package com.osm.gradle.plugins
 
+import com.osm.gradle.plugins.wrapper.Rustup
+import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
+import com.osm.gradle.plugins.wrapper.builder.options.rustup.TargetOptions
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.After
@@ -80,38 +83,111 @@ rustic {
         "i686-pc-windows-gnu" {
             target "i686-pc-windows-gnu"
             environments = [
-                    AR    : "/usr/bin/i686-w64-mingw32-ar",
-                    AS    : "/usr/bin/i686-w64-mingw32-as",
-                    CC    : "/usr/bin/i686-w64-mingw32-gcc",
-                    CXX   : "/usr/bin/i686-w64-mingw32-g++",
-                    LD    : "/usr/bin/i686-w64-mingw32-ld",
-                    RANLIB: "/usr/bin/i686-w64-mingw32-ranlib",
-                    STRIP : "/usr/bin/i686-w64-mingw32-strip"
+                    AR : "/usr/bin/i686-w64-mingw32-gcc-ar",
+                    CC : "/usr/bin/i686-w64-mingw32-gcc"
             ]
         }
- 
+
         "x86_64-pc-windows-gnu" {
-            enabled = false
             target "x86_64-pc-windows-gnu"
             environments = [
-                    AR    : "/usr/bin/x86_64-w64-mingw32-ar",
-                    AS    : "/usr/bin/x86_64-w64-mingw32-as",
-                    CC    : "/usr/bin/x86_64-w64-mingw32-gcc",
-                    CXX   : "/usr/bin/x86_64-w64-mingw32-g++",
-                    LD    : "/usr/bin/x86_64-w64-mingw32-ld",
-                    RANLIB: "/usr/bin/x86_64-w64-mingw32-ranlib",
-                    STRIP : "/usr/bin/x86_64-w64-mingw32-strip"
+                    AR : "/usr/bin/x86_64-w64-mingw32-gcc-ar",
+                    CC : "/usr/bin/x86_64-w64-mingw32-gcc"
             ]
-            ext {
-                hogeeeeee = "pipipipi"
-            }
+        }
+
+        "i686-apple-darwin" {
+            enabled false
+            target "i686-apple-darwin"
+            environments = [
+                    AR : "",
+                    CC : ""
+            ]
+        }
+
+        "x86_64-apple-darwin" {
+            enabled false
+            target "x86_64-apple-darwin"
+            environments = [
+                    AR : "",
+                    CC : ""
+            ]
+        }
+
+        "i686-unknown-linux-gnu" {
+            target "i686-unknown-linux-gnu"
+            environments = [
+                    AR : "/usr/bin/i686-linux-gnu-gcc-ar-8",
+                    CC : "/usr/bin/i686-linux-gnu-gcc-8"
+            ]
+        }
+
+        "x86_64-unknown-linux-gnu" {
+            target "x86_64-unknown-linux-gnu"
+            environments = [
+                    AR : "/usr/bin/x86_64-linux-gnu-gcc-ar-8",
+                    CC : "/usr/bin/x86_64-linux-gnu-gcc-8"
+            ]
+        }
+
+        "arm-unknown-linux-gnueabihf" {
+            target "arm-unknown-linux-gnueabihf"
+            environments = [
+                    AR : "/usr/bin/arm-linux-gnueabihf-gcc-ar-8",
+                    CC : "/usr/bin/arm-linux-gnueabihf-gcc-8"
+            ]
+        }
+
+        "aarch64-unknown-linux-gnu" {
+            target "aarch64-unknown-linux-gnu"
+            environments = [
+                    AR : "/usr/bin/aarch64-linux-gnu-gcc-ar-8",
+                    CC : "/usr/bin/aarch64-linux-gnu-gcc-8"
+            ]
+        }
+
+        "i686-linux-android" {
+            target "i686-linux-android"
+            environments = [
+                    AR : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android-ar",
+                    CC : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26-clang"
+            ]
+        }
+
+        "x86_64-linux-android" {
+            target "x86_64-linux-android"
+            environments = [
+                    AR : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android-ar",
+                    CC : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android26-clang"
+            ]
+        }
+
+        "arm-linux-androideabi" {
+            target "arm-linux-androideabi"
+            environments = [
+                    AR : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar",
+                    CC : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi26-clang"
+            ]
+        }
+
+        "aarch64-linux-android" {
+            target "aarch64-linux-android"
+            environments = [
+                    AR : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar",
+                    CC : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang"
+            ]
+        }
+    }
+
+    variants.all {
+        String target = it.target
+        String cc = it.environments["CC"]
+        if (target != null && cc != null) {
+            String linkerEnvName = "CARGO_TARGET_" + target.replace("-", "_").toUpperCase() + "_LINKER"
+            it.environments.put(linkerEnvName, cc)
         }
         
-        variants.all {
-            if (it.flavor.hasProperty("hogeeeeee")) {
-                println(it.flavor.hogeeeeee)
-            }
-        }
+        println(it.target)
     }
 }
         """
@@ -133,4 +209,13 @@ rustic {
 //        val cargo = Cargo()
 //        cargo.build(builder)
 //    }
+
+    @Test
+    fun cargoBuild() {
+        val builder = OptionBuilder()
+        builder.put(TargetOptions.List())
+
+        val rustup = Rustup()
+        rustup.target(builder)
+    }
 }

@@ -43,7 +43,7 @@ open class Rustic(val project: Project) : GroovyObjectSupport() {
         variantManager.clearBuildTypes()
         variantManager.clearFlavors()
         variantManager.addCallback(Action {
-            taskGenerator.createTasks(it)
+            taskGenerator.createVariantTasksRequest(it)
             variants.clear()
             variants.addAll(it)
         })
@@ -65,12 +65,12 @@ open class Rustic(val project: Project) : GroovyObjectSupport() {
         releaseOptions.buildOptions.debug = false
         buildTypes.add(releaseOptions)
 
-        buildTypes.all { buildType ->
-            variantManager.addBuildType(buildType)
+        buildTypes.all {
+            variantManager.addBuildType(it)
         }
 
-        flavors.all { flavor ->
-            variantManager.addFlavor(flavor)
+        flavors.all {
+            variantManager.addFlavor(it)
         }
     }
 

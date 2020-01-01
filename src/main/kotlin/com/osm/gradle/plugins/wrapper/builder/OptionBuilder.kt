@@ -1,11 +1,11 @@
 package com.osm.gradle.plugins.wrapper.builder
 
-import com.osm.gradle.plugins.wrapper.builder.options.Base
+import com.osm.gradle.plugins.wrapper.builder.options.IBase
 
 class OptionBuilder {
-    private val options = ArrayList<Base>()
+    private val options = ArrayList<IBase>()
 
-    fun put(option: Base): OptionBuilder {
+    fun put(option: IBase): OptionBuilder {
         if (!option.multiple) {
             removeIfMatchType(option.javaClass)
         }

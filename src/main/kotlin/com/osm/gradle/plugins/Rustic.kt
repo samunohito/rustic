@@ -38,11 +38,11 @@ open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
         defaultConfig = extensions.create("defaultConfig", DefaultConfig::class.java)
         buildTypes = project.container(
             BuildTypeConfig::class.java,
-            ConfigBase.Factory(project, BuildTypeConfig::class.java)
+            ConfigBase.Factory(extensions, BuildTypeConfig::class.java)
         )
         flavors = project.container(
             ProductFlavorConfig::class.java,
-            ConfigBase.Factory(project, ProductFlavorConfig::class.java)
+            ConfigBase.Factory(extensions, ProductFlavorConfig::class.java)
         )
         variants = DefaultDomainObjectSet<BuildVariant>(
             BuildVariant::class.java,

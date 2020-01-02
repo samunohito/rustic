@@ -4,12 +4,8 @@ import com.osm.gradle.plugins.types.RusticConfigurableBase
 import com.osm.gradle.plugins.types.config.options.*
 import com.osm.gradle.plugins.types.interfaces.IConfigBase
 import groovy.lang.Closure
-import groovy.lang.MissingPropertyException
 import org.gradle.api.NamedDomainObjectFactory
-import org.gradle.api.Project
-import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
-import org.gradle.internal.extensibility.DefaultExtraPropertiesExtension
 
 abstract class ConfigBase(override val name: String) : RusticConfigurableBase(), IConfigBase {
     override var enabled: Boolean? = true
@@ -64,9 +60,10 @@ abstract class ConfigBase(override val name: String) : RusticConfigurableBase(),
         benchOptions.configure(closure)
     }
 
-    class Factory<T : ConfigBase>(private val project: Project, private val type: Class<T>) : NamedDomainObjectFactory<T> {
+    class Factory<T : ConfigBase>(private val extensions: ExtensionContainer, private val type: Class<T>) :
+        NamedDomainObjectFactory<T> {
         override fun create(name: String): T {
-            return project.extensions.create(name, type, name)
+            return extensions.create(name, type, name)
         }
     }
 }

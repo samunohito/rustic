@@ -4,6 +4,9 @@ import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
 import java.nio.file.Path
 import java.nio.file.Paths
 
+/**
+ * Wraps the functionality of the cargo command.
+ */
 class Cargo : RustToolBase() {
     override val executable: String = "cargo"
 

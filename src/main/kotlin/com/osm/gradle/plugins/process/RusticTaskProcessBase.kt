@@ -7,9 +7,9 @@ import com.osm.gradle.plugins.wrapper.RustToolBase
 import org.gradle.api.Project
 
 abstract class RusticTaskProcessBase<T : RustToolBase>(
-    val project: Project,
-    val settings: ProjectSettings,
-    val variant: BuildVariant
+    protected val project: Project,
+    protected val settings: ProjectSettings,
+    protected val variant: BuildVariant
 ) : IRusticTaskProcess {
     override fun run() {
         if (variant.enabled == true || variant.enabled == null) {
@@ -24,6 +24,14 @@ abstract class RusticTaskProcessBase<T : RustToolBase>(
         }
     }
 
+    /**
+     * Create an instance of RustToolBase.
+     */
     abstract fun createToolBase(): T
+
+    /**
+     * This function is called when RusticTask is executed.
+     * Not executed when BuildVariant # enable is false.
+     */
     abstract fun call(tool: T)
 }

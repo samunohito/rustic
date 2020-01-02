@@ -84,7 +84,7 @@ class BuildVariant(
                 Paths.get(Common.getWorkingDirectory(project.projectDir, settings.projectLocation).toString(), "target")
             }
 
-            val buildTypeString = if (buildOptions.debug == false) "release" else "debug";
+            val buildTypeString = if (buildOptions.debug == false) "release" else "debug"
 
             return if (target != null) {
                 Paths.get(intermediates.toString(), target, buildTypeString)

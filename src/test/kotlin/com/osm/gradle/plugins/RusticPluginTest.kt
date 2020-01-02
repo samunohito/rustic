@@ -1,8 +1,5 @@
 package com.osm.gradle.plugins
 
-import com.osm.gradle.plugins.wrapper.Rustup
-import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
-import com.osm.gradle.plugins.wrapper.builder.options.rustup.TargetOptions
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.After
@@ -12,210 +9,122 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 
 class RusticPluginTest {
     @Rule
     @JvmField
     val testProjectDir = TemporaryFolder()
-    val srcJarPath = Paths.get("build/libs/rustic-0.1.0.jar")
-    lateinit var dstJarPath: Path
-    var buildFile: File? = null
+    lateinit var buildFile: File
 
     @Before
     fun setUp() {
-        buildFile = testProjectDir.newFile("build.gradle")
-        dstJarPath = Paths.get(testProjectDir.root.toPath().toString(), srcJarPath.fileName?.toString())
+        testProjectDir.create()
+
+        val srcJarPath = Paths.get("build/libs/rustic-0.1.0.jar")
+        val dstJarPath = Paths.get(testProjectDir.root.toPath().toString(), srcJarPath.fileName?.toString())
         Files.copy(srcJarPath, dstJarPath)
+
+        buildFile = testProjectDir.newFile("build.gradle")
+        buildFile.writeText(
+            """
+            buildscript {
+                dependencies {
+                    classpath files('$dstJarPath')
+                }
+            }
+
+            apply plugin: 'com.osm.gradle.plugins.rustic'
+            
+            """.trimIndent()
+        )
+
+        val manifest = testProjectDir.newFile("Cargo.toml")
+        manifest.writeText(
+            """
+            [package]
+            name = "rustic_test"
+            version = "0.1.0"
+            
+            [lib]
+            name = "rustic_test"
+            path = "src/lib.rs"
+            """.trimIndent()
+        )
+
+        testProjectDir.newFolder("src")
+        testProjectDir.newFile("src/lib.rs").writeText(
+            """
+            pub fn test() {
+                println!("test")
+            }
+            """.trimIndent()
+        )
     }
 
     @After
     fun tearDown() {
     }
 
-      //  @Test
-    fun apply() {
-        val project = ProjectBuilder.builder().build()
-        project.apply {
-            it.plugin("com.osm.gradle.plugins.rustic")
-        }
-    }
-
-    @Test
-    fun applyBlock() {
-        buildFile?.writeText(
+    private fun run(script: String): List<String> {
+        buildFile.appendText(
             """
-buildscript {
-    dependencies {
-        classpath files('${dstJarPath}')
-    }
-}
-
-apply plugin: 'com.osm.gradle.plugins.rustic'
-
-rustic {
-    projectSettings {
-        projectLocation "${testProjectDir.root}"
-    }
-  
-    defaultConfig {
-        enabled = true
-    }
-     
-    buildTypes {
-        debug {
-            target = "x86_64-unknown-linux-gnu"
-            buildOptions {
-                debug = true
+            rustic {
+                projectSettings {
+                    projectLocation = "${testProjectDir.root}"
+                    jobs 8
+                }
+                
+                $script
             }
-        }
-        
-        release {
-            target = "x86_64-unknown-linux-gnu"
-            buildOptions {
-                debug = false
-            }
-        }
-    }
-    
-    flavors {
-        "i686-pc-windows-gnu" {
-            target "i686-pc-windows-gnu"
-            environments = [
-                    AR : "/usr/bin/i686-w64-mingw32-gcc-ar",
-                    CC : "/usr/bin/i686-w64-mingw32-gcc"
-            ]
-        }
-
-        "x86_64-pc-windows-gnu" {
-            target "x86_64-pc-windows-gnu"
-            environments = [
-                    AR : "/usr/bin/x86_64-w64-mingw32-gcc-ar",
-                    CC : "/usr/bin/x86_64-w64-mingw32-gcc"
-            ]
-        }
-
-        "i686-apple-darwin" {
-            enabled false
-            target "i686-apple-darwin"
-            environments = [
-                    AR : "",
-                    CC : ""
-            ]
-        }
-
-        "x86_64-apple-darwin" {
-            enabled false
-            target "x86_64-apple-darwin"
-            environments = [
-                    AR : "",
-                    CC : ""
-            ]
-        }
-
-        "i686-unknown-linux-gnu" {
-            target "i686-unknown-linux-gnu"
-            environments = [
-                    AR : "/usr/bin/i686-linux-gnu-gcc-ar-8",
-                    CC : "/usr/bin/i686-linux-gnu-gcc-8"
-            ]
-        }
-
-        "x86_64-unknown-linux-gnu" {
-            target "x86_64-unknown-linux-gnu"
-            environments = [
-                    AR : "/usr/bin/x86_64-linux-gnu-gcc-ar-8",
-                    CC : "/usr/bin/x86_64-linux-gnu-gcc-8"
-            ]
-        }
-
-        "arm-unknown-linux-gnueabihf" {
-            target "arm-unknown-linux-gnueabihf"
-            environments = [
-                    AR : "/usr/bin/arm-linux-gnueabihf-gcc-ar-8",
-                    CC : "/usr/bin/arm-linux-gnueabihf-gcc-8"
-            ]
-        }
-
-        "aarch64-unknown-linux-gnu" {
-            target "aarch64-unknown-linux-gnu"
-            environments = [
-                    AR : "/usr/bin/aarch64-linux-gnu-gcc-ar-8",
-                    CC : "/usr/bin/aarch64-linux-gnu-gcc-8"
-            ]
-        }
-
-        "i686-linux-android" {
-            target "i686-linux-android"
-            environments = [
-                    AR : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android-ar",
-                    CC : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26-clang"
-            ]
-        }
-
-        "x86_64-linux-android" {
-            target "x86_64-linux-android"
-            environments = [
-                    AR : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android-ar",
-                    CC : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android26-clang"
-            ]
-        }
-
-        "arm-linux-androideabi" {
-            target "arm-linux-androideabi"
-            environments = [
-                    AR : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar",
-                    CC : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi26-clang"
-            ]
-        }
-
-        "aarch64-linux-android" {
-            target "aarch64-linux-android"
-            environments = [
-                    AR : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar",
-                    CC : "/usr/local/lib/android-ndk-r20b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang"
-            ]
-        }
-    }
-
-    variants.all {
-        String target = it.target
-        String cc = it.environments["CC"]
-        if (target != null && cc != null) {
-            String linkerEnvName = "CARGO_TARGET_" + target.replace("-", "_").toUpperCase() + "_LINKER"
-            it.environments.put(linkerEnvName, cc)
-        }
-        
-        println(it.target)
-    }
-}
-        """
+            """.trimIndent()
         )
 
         val result = GradleRunner.create()
             .withProjectDir(testProjectDir.root)
             .build()
 
-        println(result.output)
-        println(result.tasks)
+        return result.output.lines()
     }
 
-//    @Test
-//    fun cargoBuild() {
-//        val builder = OptionBuilder()
-//        builder.put(CompilationOptions.Target("x86_64-unknown-linux-gnu"))
-//
-//        val cargo = Cargo()
-//        cargo.build(builder)
-//    }
+    @Test
+    fun apply() {
+        val ret = run(
+            """
+            defaultConfig {
+                target "defaultConfig"
+            }
+            
+            buildTypes {
+                niku {
+                    target "nikuBuild"
+                }
+            }
+            
+            flavors {
+                test001 {
+                    target "test001"
+                }
+                
+                test002 {
+                    
+                }
+            }
+            
+            variants.all {
+                println(it.name + " " + it.target)
+            }
+        """.trimIndent()
+        )
+
+        println(ret.joinToString("\n"))
+    }
 
     @Test
-    fun cargoBuild() {
-        val builder = OptionBuilder()
-        builder.put(TargetOptions.List())
-
-        val rustup = Rustup()
-        rustup.target(builder)
+    fun applyDynamic() {
+        val project = ProjectBuilder.builder().build()
+        project.apply {
+            it.plugin("com.osm.gradle.plugins.rustic")
+        }
     }
 }

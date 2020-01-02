@@ -4,7 +4,7 @@ import com.osm.gradle.plugins.types.interfaces.IConfigBase
 import com.osm.gradle.plugins.types.interfaces.options.ISelection
 import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
 import com.osm.gradle.plugins.wrapper.builder.helpers.BuilderHelper
-import com.osm.gradle.plugins.wrapper.builder.options.IBase
+import com.osm.gradle.plugins.wrapper.builder.options.ICommandOption
 import com.osm.gradle.plugins.wrapper.builder.options.cargo.TargetSelection
 
 class SelectionHelper : BuilderHelper {
@@ -26,8 +26,8 @@ class SelectionHelper : BuilderHelper {
         builder: OptionBuilder,
         all: Boolean?,
         each: Iterable<String?>?,
-        onAll: (() -> IBase),
-        onEach: ((List<String>) -> IBase)?
+        onAll: (() -> ICommandOption),
+        onEach: ((List<String>) -> ICommandOption)?
     ) {
         if (all == true) {
             builder.put(onAll.invoke())

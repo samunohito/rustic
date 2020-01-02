@@ -9,7 +9,6 @@ import com.osm.gradle.plugins.types.config.options.CleanOptions
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import com.osm.gradle.plugins.util.string.toCamelCase
 import org.gradle.api.Project
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
@@ -18,20 +17,21 @@ class TaskGenerator(
     private val settings: ProjectSettings
 ) {
     private val nothingTaskProcess = NothingTaskProcess()
-    private val queue = LinkedBlockingQueue<List<BuildVariant>>()
+    private val queue = LinkedBlockingQueue<RequestItem>()
     private val looper: Runnable
 
     init {
         looper = thread {
             while (true) {
                 val item = queue.take()
-                createTasksInternal(item)
+                createTasksInternal(item.variants)
+                item.callback()
             }
         }
     }
 
-    fun createVariantTasksRequest(variants: List<BuildVariant>) {
-        queue.add(variants)
+    fun createVariantTasksRequest(item: RequestItem) {
+        queue.add(item)
     }
 
     private fun createTasksInternal(variants: List<BuildVariant>) {
@@ -127,4 +127,6 @@ class TaskGenerator(
         (category + variant.parentName)
 
     private fun getTaskName(category: String, variant: BuildVariant) = (category + variant.name)
+
+    class RequestItem(val variants: List<BuildVariant>, val callback: () -> Unit)
 }

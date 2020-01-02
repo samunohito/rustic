@@ -9,6 +9,11 @@ import org.gradle.api.tasks.TaskContainer
 open class RusticTask : DefaultTask() {
     lateinit var process: IRusticTaskProcess
 
+    @TaskAction
+    fun run() {
+        process.run()
+    }
+
     companion object Factory {
         fun obtain(tasks: TaskContainer, name: String, process: IRusticTaskProcess): RusticTask {
             val task = find(tasks, name) ?: tasks.create(name, RusticTask::class.java)
@@ -34,38 +39,5 @@ open class RusticTask : DefaultTask() {
                 it.enabled = false
             }
         }
-
-//        private val cache = ConcurrentHashMap<String, RusticTask>()
-//
-//        fun obtain(tasks: TaskContainer, name: String, process: IRusticTaskProcess): RusticTask {
-//            val task = if (cache[name] != null) {
-//                cache[name]!!
-//            } else {
-//                tasks.create(name, RusticTask::class.java)
-//            }
-//
-//            cache[name] = task
-//
-//            task.process = process
-//            task.group = TASK_GROUP_NAME
-//            task.enabled = true
-//
-//            return task
-//        }
-//
-//        fun find(name: String): RusticTask? {
-//            return cache[name]
-//        }
-//
-//        fun disableAll() {
-//            cache.values.forEach {
-//                it.enabled = false
-//            }
-//        }
-    }
-
-    @TaskAction
-    fun run() {
-        process.run()
     }
 }

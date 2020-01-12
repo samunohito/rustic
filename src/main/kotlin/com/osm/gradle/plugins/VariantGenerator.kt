@@ -6,19 +6,22 @@ import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import org.gradle.api.Project
+import java.util.concurrent.ConcurrentHashMap
 
 class VariantGenerator(
     private val project: Project,
     private val projectSettings: ProjectSettings,
     private val defaultConfig: DefaultConfig?
 ) {
-    private val buildTypes = ArrayList<BuildTypeConfig>()
-    private val flavors = ArrayList<ProductFlavorConfig>()
+    private val buildTypes = ConcurrentHashMap<String, BuildTypeConfig>()
+    private val flavors = ConcurrentHashMap<String, ProductFlavorConfig>()
+    private val variants = ConcurrentHashMap<String, BuildVariant>()
     private val callbacks = ArrayList<(List<BuildVariant>) -> Unit>()
 
     fun initialize() {
         buildTypes.clear()
         flavors.clear()
+        variants.clear()
         callbacks.clear()
     }
 
@@ -45,7 +48,7 @@ class VariantGenerator(
      * @param buildTypeConfig
      */
     fun addBuildType(buildTypeConfig: BuildTypeConfig) {
-        buildTypes.add(buildTypeConfig)
+        buildTypes[buildTypeConfig.name] = buildTypeConfig
         configure()
     }
 
@@ -57,22 +60,24 @@ class VariantGenerator(
      * @param productFlavorConfig
      */
     fun addProductFlavor(productFlavorConfig: ProductFlavorConfig) {
-        flavors.add(productFlavorConfig)
+        flavors[productFlavorConfig.name] = productFlavorConfig
         configure()
     }
 
-    @Synchronized
     private fun configure() {
-        val ret = if (flavors.isEmpty()) {
-            buildTypes.map { BuildVariant(project, projectSettings, defaultConfig, it, null) }
+        val genVariants = if (flavors.isEmpty()) {
+            buildTypes.values.map { BuildVariant(project, projectSettings, defaultConfig, it, null) }
         } else {
-            buildTypes.flatMap { buildType ->
-                flavors.map { flavor ->
+            buildTypes.values.flatMap { buildType ->
+                flavors.values.map { flavor ->
                     BuildVariant(project, projectSettings, defaultConfig, buildType, flavor)
                 }
             }
         }
 
-        callbacks.forEach { it(ret) }
+        val newlyGenVariants = genVariants.filter { !variants.containsKey(it.name) }
+        variants.putAll(newlyGenVariants.associateBy { it.name })
+
+        callbacks.forEach { it(newlyGenVariants) }
     }
 }

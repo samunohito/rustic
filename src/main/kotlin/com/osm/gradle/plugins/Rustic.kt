@@ -32,7 +32,7 @@ open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
         // initialize members
         // ----------------------------------------------------------------
 
-        val extensions = (this as ExtensionAware).extensions
+        val extensions = (project as ExtensionAware).extensions
 
         projectSettings = extensions.create("projectSettings", ProjectSettings::class.java)
         defaultConfig = extensions.create("defaultConfig", DefaultConfig::class.java)
@@ -49,6 +49,10 @@ open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
             CollectionCallbackActionDecorator.NOOP
         )
 
+        extensions.add("buildTypes", buildTypes)
+        extensions.add("flavors", flavors)
+        extensions.add("variants", variants)
+
         taskGenerator = TaskGenerator(project, projectSettings)
         variantGenerator = VariantGenerator(project, projectSettings, defaultConfig)
 
@@ -62,7 +66,6 @@ open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
         variantGenerator.initialize()
         variantGenerator.addCallback {
             taskGenerator.createVariantTasksRequest(TaskGenerator.RequestItem(it) {
-                variants.clear()
                 variants.addAll(it)
             })
         }

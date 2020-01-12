@@ -18,16 +18,22 @@ class TaskGenerator(
 ) {
     private val nothingTaskProcess = NothingTaskProcess()
     private val queue = LinkedBlockingQueue<RequestItem>()
-    private val looper: Runnable
+    private var looper: Thread? = null
+
+    private val looperInternal = {
+        while (looper != null && !(looper!!.isInterrupted)) {
+            val item = queue.take()
+            createTasksInternal(item.variants)
+            item.callback()
+        }
+    }
 
     init {
-        looper = thread {
-            while (true) {
-                val item = queue.take()
-                createTasksInternal(item.variants)
-                item.callback()
-            }
-        }
+        looper = thread(start = true, name = "TaskGeneratorLooper", block = looperInternal)
+    }
+
+    protected fun finalize() {
+        looper?.also { it.interrupt() }
     }
 
     fun createVariantTasksRequest(item: RequestItem) {

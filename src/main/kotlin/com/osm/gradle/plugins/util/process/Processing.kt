@@ -1,10 +1,11 @@
 package com.osm.gradle.plugins.util.process
 
+import com.osm.gradle.plugins.log.LoggerSupport
 import java.io.IOException
 import javax.annotation.Nonnull
 import kotlin.concurrent.thread
 
-class Processing constructor(@Nonnull val param: ProcessingParameters) {
+class Processing constructor(@Nonnull val param: ProcessingParameters) : LoggerSupport {
     private val outBuffer = AppendableBuffer(if (param.printStdOut) listOf(System.out) else emptyList())
     private val errBuffer = AppendableBuffer(if (param.printStdErr) listOf(System.err) else emptyList())
 
@@ -13,7 +14,8 @@ class Processing constructor(@Nonnull val param: ProcessingParameters) {
         val command = param.arguments.filter { it.isNotEmpty() }.toMutableList()
         command.add(0, param.executablePath.toAbsolutePath().toString())
 
-        println(command.joinToString(" "))
+        debug("running command....")
+        debug(command.joinToString(" "))
 
         val processBuilder = ProcessBuilder(command)
         processBuilder.redirectErrorStream(param.isRedirectErrStream)

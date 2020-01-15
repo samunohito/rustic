@@ -119,7 +119,15 @@ class RusticPluginTest {
                 }
                 
                 test005 {
-                    
+                    environments = [
+                            AR: "/usr/bin/x86_64-w64-mingw32-gcc-ar",
+                            CC: "/usr/bin/x86_64-w64-mingw32-gcc"
+                    ]
+                    cargoConfig {
+                        targetTriple {
+                            linker environments["CC"]
+                        }
+                    }
                 }
             }
             

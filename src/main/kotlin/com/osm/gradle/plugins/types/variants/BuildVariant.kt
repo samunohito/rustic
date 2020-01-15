@@ -7,16 +7,17 @@ import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.interfaces.IConfigBase
 import com.osm.gradle.plugins.types.interfaces.options.*
+import com.osm.gradle.plugins.types.interfaces.options.config.ICargoConfig
 import com.osm.gradle.plugins.types.variants.options.BenchOptions
 import com.osm.gradle.plugins.types.variants.options.BuildOptions
 import com.osm.gradle.plugins.types.variants.options.Selection
 import com.osm.gradle.plugins.types.variants.options.TestOptions
+import com.osm.gradle.plugins.types.variants.options.config.CargoConfig
 import com.osm.gradle.plugins.util.other.Common
 import com.osm.gradle.plugins.util.string.toCamelCase
 import org.gradle.api.Project
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
 
 class BuildVariant(
     val project: Project,
@@ -26,43 +27,46 @@ class BuildVariant(
     val flavor: ProductFlavorConfig?
 ) : PriorityResolveBase<IConfigBase>(listOf<IConfigBase?>(flavor, build, default)), IConfigBase {
     private val DEBUG = true
-    private val internalEnvironments = ConcurrentHashMap<String, String>()
+
+    override val name: String
+        get() = targets
+            .reversed()
+            .filterNotNull().joinToString("") {
+                it.name.toCamelCase('-').toCamelCase().capitalize()
+            }
+            .capitalize()
+
+    override val environments: MutableMap<String, String>
+        get() {
+            val ret = HashMap<String, String>()
+            targets.filterNotNull().reversed().forEach {
+                ret.putAll(it.environments)
+            }
+
+            return ret
+        }
 
     override val enabled: Boolean?
         get() = resolve { it.enabled }
-    override val name: String
-        get() {
-            return targets
-                .reversed()
-                .filterNotNull().joinToString("") {
-                    it.name.toCamelCase('-').toCamelCase().capitalize()
-                }
-                .capitalize()
-        }
     override val targetDir: String?
         get() = resolve { it.targetDir }
-    override val environments: MutableMap<String, String>
-        get() {
-            targets.filterNotNull().reversed().forEach {
-                internalEnvironments.putAll(it.environments)
-            }
-
-            return internalEnvironments
-        }
     override val target: String?
         get() = resolve { it.target }
     override val features: Iterable<String>?
         get() = resolve { it.features }
-    override val targetSelection: ISelection =
-        Selection(listOf<ISelection?>(flavor?.targetSelection, build?.targetSelection, default?.targetSelection))
-    override val buildOptions: IBuildOptions =
-        BuildOptions(listOf<IBuildOptions?>(flavor?.buildOptions, build?.buildOptions, default?.buildOptions))
-    override val checkOptions: ICheckOptions =
-        CheckOptions(listOf<ICheckOptions?>(flavor?.checkOptions, build?.checkOptions, default?.checkOptions))
-    override val testOptions: ITestOptions =
-        TestOptions(listOf<ITestOptions?>(flavor?.testOptions, build?.testOptions, default?.testOptions))
-    override val benchOptions: IBenchOptions =
-        BenchOptions(listOf<IBenchOptions?>(flavor?.benchOptions, build?.benchOptions, default?.benchOptions))
+
+    override val targetSelection: Selection
+        get() = Selection(listOf(flavor?.targetSelection, build?.targetSelection, default?.targetSelection))
+    override val buildOptions: BuildOptions
+        get() = BuildOptions(listOf(flavor?.buildOptions, build?.buildOptions, default?.buildOptions))
+    override val checkOptions: CheckOptions
+        get() = CheckOptions(listOf(flavor?.checkOptions, build?.checkOptions, default?.checkOptions))
+    override val testOptions: TestOptions
+        get() = TestOptions(listOf(flavor?.testOptions, build?.testOptions, default?.testOptions))
+    override val benchOptions: BenchOptions
+        get() = BenchOptions(listOf(flavor?.benchOptions, build?.benchOptions, default?.benchOptions))
+    override val cargoConfig: CargoConfig
+        get() = CargoConfig(this, listOf(flavor?.cargoConfig, build?.cargoConfig, default?.cargoConfig))
 
     val parentName: String
         get() {

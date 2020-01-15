@@ -1,10 +1,10 @@
 package com.osm.gradle.plugins.types
 
-import com.osm.gradle.plugins.util.objects.FieldPrintable
+import com.osm.gradle.plugins.log.LoggerSupport
 import groovy.lang.Closure
 import org.gradle.util.Configurable
 
-open class RusticConfigurableBase : FieldPrintable(), Configurable<Any> {
+open class RusticConfigurableBase : LoggerSupport, Configurable<Any> {
     var resolveStrategy = Closure.DELEGATE_FIRST
 
     override fun configure(closure: Closure<*>?): Any {

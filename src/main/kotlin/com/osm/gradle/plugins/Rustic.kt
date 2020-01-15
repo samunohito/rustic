@@ -65,7 +65,7 @@ open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
 
         variantGenerator.initialize()
         variantGenerator.addCallback {
-            taskGenerator.createVariantTasksRequest(TaskGenerator.RequestItem(it) {
+            taskGenerator.createVariantTasks(TaskGenerator.RequestItem(it) {
                 variants.addAll(it)
             })
         }

@@ -45,7 +45,8 @@ interface InstallOptions {
         override val option: String = "--force"
     }
 
-    class Bin(name: kotlin.collections.List<String?>) : MultipleCommandOptionBase(name.filterNotNull().filter { it.isNotEmpty() }),
+    class Bin(name: kotlin.collections.List<String?>) :
+        MultipleCommandOptionBase(name.filterNotNull().filter { it.isNotEmpty() }),
         InstallOptions {
         override val option: String = "--bin"
     }

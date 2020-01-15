@@ -2,6 +2,7 @@ package com.osm.gradle.plugins.types.config
 
 import com.osm.gradle.plugins.types.RusticConfigurableBase
 import com.osm.gradle.plugins.types.config.options.*
+import com.osm.gradle.plugins.types.config.options.config.CargoConfig
 import com.osm.gradle.plugins.types.interfaces.IConfigBase
 import groovy.lang.Closure
 import org.gradle.api.NamedDomainObjectFactory
@@ -19,6 +20,7 @@ abstract class ConfigBase(override val name: String) : RusticConfigurableBase(),
     override val checkOptions: CheckOptions = CheckOptions()
     override val testOptions: TestOptions = TestOptions()
     override val benchOptions: BenchOptions = BenchOptions()
+    override val cargoConfig: CargoConfig = CargoConfig()
 
     open fun enabled(value: Boolean?) {
         enabled = value
@@ -58,6 +60,10 @@ abstract class ConfigBase(override val name: String) : RusticConfigurableBase(),
 
     open fun benchOptions(closure: Closure<*>) {
         benchOptions.configure(closure)
+    }
+
+    open fun cargoConfig(closure: Closure<*>) {
+        cargoConfig.configure(closure)
     }
 
     class Factory<T : ConfigBase>(private val extensions: ExtensionContainer, private val type: Class<T>) :

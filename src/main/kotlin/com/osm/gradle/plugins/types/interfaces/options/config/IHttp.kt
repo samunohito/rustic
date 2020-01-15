@@ -35,7 +35,7 @@ interface IHttp {
     /**
      * whether or not to use HTTP/2 multiplexing where possible
      */
-    val multiplexint: Boolean?
+    val multiplexing: Boolean?
     /**
      * This setting can be used to help debug what's going on with HTTP requests made
      * by Cargo. When set to `true` then Cargo's normal debug logging will be filled

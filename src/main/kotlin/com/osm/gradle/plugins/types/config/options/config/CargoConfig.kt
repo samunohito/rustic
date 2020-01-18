@@ -6,7 +6,7 @@ import com.osm.gradle.plugins.types.interfaces.options.config.ICargoConfig
 import groovy.lang.Closure
 
 open class CargoConfig : RusticConfigurableBase(), ICargoConfig {
-//    override var paths: Iterable<String?>? = ArrayList()
+    //    override var paths: Iterable<String?>? = ArrayList()
     override var registries: Map<String, String>? = HashMap()
 
     override var cargoNew: CargoNew = CargoNew()

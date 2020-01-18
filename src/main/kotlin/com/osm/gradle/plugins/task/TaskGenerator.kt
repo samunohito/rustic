@@ -14,9 +14,7 @@ class TaskGenerator(
 ) {
     private val nothingTaskProcess = NothingTaskProcess()
 
-    fun createVariantTasks(item: RequestItem) {
-        val variants = item.variants
-
+    fun createVariantTasks(variants: List<BuildVariant>) {
         createVariantTasks("rustBuild", variants) { BuildTaskProcess(project, settings, it) }
         createVariantTasks("rustCheck", variants) { CheckTaskProcess(project, settings, it) }
         createVariantTasks("rustTest", variants) { TestTaskProcess(project, settings, it) }
@@ -25,8 +23,6 @@ class TaskGenerator(
             .map { BuildVariant(project, settings, it.default, null, it.flavor) }
             .distinctBy { it.name }
         createVariantTasks("rustBench", benchList) { BenchTaskProcess(project, settings, it) }
-
-        item.callback()
     }
 
     private fun createVariantTasks(
@@ -87,6 +83,4 @@ class TaskGenerator(
         (category + variant.parentName)
 
     private fun getTaskName(category: String, variant: BuildVariant) = (category + variant.name)
-
-    class RequestItem(val variants: List<BuildVariant>, val callback: () -> Unit)
 }

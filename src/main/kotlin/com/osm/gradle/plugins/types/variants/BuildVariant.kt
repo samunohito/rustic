@@ -6,8 +6,6 @@ import com.osm.gradle.plugins.types.config.BuildTypeConfig
 import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.interfaces.IConfigBase
-import com.osm.gradle.plugins.types.interfaces.options.*
-import com.osm.gradle.plugins.types.interfaces.options.config.ICargoConfig
 import com.osm.gradle.plugins.types.variants.options.BenchOptions
 import com.osm.gradle.plugins.types.variants.options.BuildOptions
 import com.osm.gradle.plugins.types.variants.options.Selection

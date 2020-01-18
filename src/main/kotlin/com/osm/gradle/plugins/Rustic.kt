@@ -10,9 +10,7 @@ import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport
-import org.gradle.api.DomainObjectSet
-import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.Project
+import org.gradle.api.*
 import org.gradle.api.internal.CollectionCallbackActionDecorator
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.plugins.ExtensionAware
@@ -24,8 +22,7 @@ open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
     val flavors: NamedDomainObjectContainer<ProductFlavorConfig>
     val variants: DomainObjectSet<BuildVariant>
 
-    private val taskGenerator: TaskGenerator
-    private val variantGenerator: VariantGenerator
+    private val listener: RusticProjectEvaluationListener
 
     init {
         // ----------------------------------------------------------------
@@ -53,30 +50,8 @@ open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
         extensions.add("flavors", flavors)
         extensions.add("variants", variants)
 
-        taskGenerator = TaskGenerator(project, projectSettings)
-        variantGenerator = VariantGenerator(project, projectSettings, defaultConfig)
-
-        // ----------------------------------------------------------------
-        // initialize variants and tasks
-        // ----------------------------------------------------------------
-
-        RusticTask.disableAll(project.tasks)
-        taskGenerator.createCleanTasks()
-
-        variantGenerator.initialize()
-        variantGenerator.addCallback {
-            taskGenerator.createVariantTasks(TaskGenerator.RequestItem(it) {
-                variants.addAll(it)
-            })
-        }
-
-        buildTypes.all {
-            variantGenerator.addBuildType(it)
-        }
-
-        flavors.all {
-            variantGenerator.addProductFlavor(it)
-        }
+        listener = RusticProjectEvaluationListener(this)
+        project.gradle.addProjectEvaluationListener(listener)
 
         // ----------------------------------------------------------------
         // set default buildTypes

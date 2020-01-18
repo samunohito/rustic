@@ -6,7 +6,6 @@ import com.osm.gradle.plugins.types.variants.BuildVariant
 import com.osm.gradle.plugins.util.other.Common
 import com.osm.gradle.plugins.wrapper.RustToolBase
 import org.gradle.api.Project
-import kotlin.math.log
 
 abstract class RusticTaskProcessBase<T : RustToolBase>(
     protected val project: Project,

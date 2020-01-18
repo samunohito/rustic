@@ -132,7 +132,11 @@ class RusticPluginTest {
             }
             
             variants.all {
-                println(it.name + " " + it.target)
+                println("variant : " + it.name + ", target : " + it.target)
+            }
+            
+            tasks.all {
+                println("task : " + it.name)
             }
         """.trimIndent()
         )
@@ -140,11 +144,11 @@ class RusticPluginTest {
         println(ret.joinToString("\n"))
     }
 
-    @Test
-    fun applyDynamic() {
-        val project = ProjectBuilder.builder().build()
-        project.apply {
-            it.plugin("com.osm.gradle.plugins.rustic")
-        }
-    }
+//    @Test
+//    fun applyDynamic() {
+//        val project = ProjectBuilder.builder().build()
+//        project.apply {
+//            it.plugin("com.osm.gradle.plugins.rustic")
+//        }
+//    }
 }

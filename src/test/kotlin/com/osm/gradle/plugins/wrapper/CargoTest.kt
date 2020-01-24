@@ -2,7 +2,7 @@ package com.osm.gradle.plugins.wrapper
 
 import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
-import com.osm.gradle.plugins.wrapper.builder.helpers.cargo.OptionsHelper2
+import com.osm.gradle.plugins.wrapper.builder.OptionHelper
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -54,10 +54,10 @@ class CargoTest {
     @Test
     fun build() {
         val config = DefaultConfig()
-        config.targetDir = ""
+        config.buildOptions.targetDir = ""
 
         val b = OptionBuilder()
-        OptionsHelper2.put(config, b)
+        OptionHelper.put(config, b)
 
         cargo.build(b)
     }

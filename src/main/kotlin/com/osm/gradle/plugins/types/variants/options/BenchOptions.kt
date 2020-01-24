@@ -1,9 +1,11 @@
 package com.osm.gradle.plugins.types.variants.options
 
 import com.osm.gradle.plugins.types.interfaces.options.IBenchOptions
-import com.osm.gradle.plugins.types.variants.PriorityResolveBase
+import com.osm.gradle.plugins.types.variants.BuildVariant
+import com.osm.gradle.plugins.types.variants.options.option.Base
 
-class BenchOptions(args: List<IBenchOptions?>) : PriorityResolveBase<IBenchOptions>(args), IBenchOptions {
+class BenchOptions(variant: BuildVariant, args: List<IBenchOptions?>) : Base<IBenchOptions>(variant, args),
+    IBenchOptions {
     override val all: Boolean?
         get() = resolve { it.all }
     override val allFeatures: Boolean?
@@ -18,52 +20,30 @@ class BenchOptions(args: List<IBenchOptions?>) : PriorityResolveBase<IBenchOptio
         get() = resolve { it.bin }
     override val bins: Boolean?
         get() = resolve { it.bins }
-    override val color: String?
-        get() = resolve { it.color }
     override val example: Iterable<String?>?
         get() = resolve { it.example }
     override val examples: Boolean?
         get() = resolve { it.examples }
     override val exclude: Iterable<String?>?
         get() = resolve { it.exclude }
-    override val features: String?
+    override val features: Iterable<String?>?
         get() = resolve { it.features }
-    override val frozen: Boolean?
-        get() = resolve { it.frozen }
-    override val help: Boolean?
-        get() = resolve { it.help }
-    override val jobs: Int?
-        get() = resolve { it.jobs }
     override val lib: Boolean?
         get() = resolve { it.lib }
-    override val locked: Boolean?
-        get() = resolve { it.locked }
-    override val manifestPath: String?
-        get() = resolve { it.manifestPath }
     override val messageFormat: String?
         get() = resolve { it.messageFormat }
     override val noDefaultFeatures: Boolean?
         get() = resolve { it.noDefaultFeatures }
-    override val noFailFast: Boolean?
-        get() = resolve { it.noFailFast }
-    override val noRun: Boolean?
-        get() = resolve { it.noRun }
-    override val offline: Boolean?
-        get() = resolve { it.offline }
-    override val packageName: Iterable<String?>?
-        get() = resolve { it.packageName }
-    override val quiet: Boolean?
-        get() = resolve { it.quiet }
-    override val target: String?
-        get() = resolve { it.target }
-    override val targetDir: String?
-        get() = resolve { it.targetDir }
     override val test: Iterable<String?>?
         get() = resolve { it.test }
     override val tests: Boolean?
         get() = resolve { it.tests }
-    override val verbose: Boolean?
-        get() = resolve { it.verbose }
     override val workspace: Boolean?
         get() = resolve { it.workspace }
+    override val jobs: Int?
+        get() = resolve { it.jobs }
+    override val noFailFast: Boolean?
+        get() = resolve { it.noFailFast }
+    override val noRun: Boolean?
+        get() = resolve { it.noRun }
 }

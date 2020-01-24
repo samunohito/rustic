@@ -29,7 +29,7 @@ class RustupTest {
     @Test
     fun targetAdd() {
         val builder = OptionBuilder()
-        builder.put(RustupOptions.Target.Add(""))
+        builder.put(RustupOptions.Target.Add("x86_64-pc-windows-gnu"))
 
         rustup.target(builder)
     }

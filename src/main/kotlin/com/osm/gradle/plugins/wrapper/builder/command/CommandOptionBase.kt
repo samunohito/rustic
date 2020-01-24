@@ -8,8 +8,8 @@ abstract class CommandOptionBase(protected val param: Iterable<String?>?) : ICom
      * Turns an option and its parameters into a list.
      */
     override fun toList(): List<String> {
-        val param = param?.filterNotNull()
-        return if (param != null) {
+        val param = param?.filter { !it.isNullOrBlank() }?.map { it!! }
+        return if (!param.isNullOrEmpty()) {
             listOfNotNull(option).plus(param)
         } else {
             if (hasValue) {

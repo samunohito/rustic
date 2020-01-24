@@ -47,7 +47,13 @@ object CargoOptions {
         enum class Type(val text: String) {
             Auto("auto"),
             Always("always"),
-            Never("never")
+            Never("never");
+
+            companion object Factory {
+                fun from(text: String): Type {
+                    return Type.values().first { it.text == text }
+                }
+            }
         }
     }
 
@@ -63,7 +69,13 @@ object CargoOptions {
         enum class Type(val text: String) {
             Human("human"),
             Json("json"),
-            Short("short")
+            Short("short");
+
+            companion object Factory {
+                fun from(text: String): Type {
+                    return Type.values().first { it.text == text }
+                }
+            }
         }
     }
 
@@ -82,7 +94,7 @@ object CargoOptions {
         override val hasValue: Boolean = false
     }
 
-    class Features(features: kotlin.collections.List<String?>) :
+    class Features(features: Iterable<String?>) :
         SingleCommandOptionBase(features.filterNotNull().filter { it.isNotEmpty() }.joinToString { " " }) {
         override val option: String = "--features"
         override val hasValue: Boolean = true
@@ -222,7 +234,7 @@ object CargoOptions {
         override val hasValue: Boolean = true
     }
 
-    class Package(name: kotlin.collections.List<String>) : MultipleCommandOptionBase(name) {
+    class Package(name: Iterable<String?>) : MultipleCommandOptionBase(name) {
         override val option: String = "--package"
         override val hasValue: Boolean = true
     }
@@ -232,7 +244,7 @@ object CargoOptions {
         override val hasValue: Boolean = false
     }
 
-    class Exclude(name: kotlin.collections.List<String>) : MultipleCommandOptionBase(name) {
+    class Exclude(name: Iterable<String?>) : MultipleCommandOptionBase(name) {
         override val option: String = "--exclude"
         override val hasValue: Boolean = true
     }
@@ -269,6 +281,16 @@ object CargoOptions {
 
     class NoFailFast : SingleCommandOptionBase() {
         override val option: String = "--no-fail-fast"
+        override val hasValue: Boolean = false
+    }
+
+    class Workspace : SingleCommandOptionBase() {
+        override val option: String = "--workspace"
+        override val hasValue: Boolean = false
+    }
+
+    class Offline : SingleCommandOptionBase() {
+        override val option: String = "--offline"
         override val hasValue: Boolean = false
     }
 

@@ -1,9 +1,9 @@
 package com.osm.gradle.plugins.types.config.options
 
 import com.osm.gradle.plugins.types.config.options.option.Base
-import com.osm.gradle.plugins.types.interfaces.options.IBenchOptions
+import com.osm.gradle.plugins.types.interfaces.options.IDefaultOptions
 
-class BenchOptions : Base(), IBenchOptions {
+class DefaultOptions : Base(), IDefaultOptions {
     override var all: Boolean? = null
     override var allFeatures: Boolean? = null
     override var allTargets: Boolean? = null
@@ -24,6 +24,11 @@ class BenchOptions : Base(), IBenchOptions {
     override var jobs: Int? = null
     override var noFailFast: Boolean? = null
     override var noRun: Boolean? = null
+    override var buildPlan: Boolean? = null
+    override var outDir: String? = null
+    override var release: Boolean? = null
+    override var profile: String? = null
+    override var doc: Boolean? = null
 
     fun all(value: Boolean?) {
         all = value
@@ -103,5 +108,25 @@ class BenchOptions : Base(), IBenchOptions {
 
     fun noRun(value: Boolean?) {
         noRun = value
+    }
+
+    fun buildPlan(value: Boolean?) {
+        buildPlan = value
+    }
+
+    fun outDir(value: String?) {
+        outDir = value
+    }
+
+    fun release(value: Boolean?) {
+        release = value
+    }
+
+    fun profile(value: String?) {
+        profile = value
+    }
+
+    fun doc(value: Boolean?) {
+        doc = value
     }
 }

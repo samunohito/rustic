@@ -10,11 +10,12 @@ import org.gradle.api.Project
 open class CleanTaskProcess(
     project: Project,
     settings: ProjectSettings,
-    variant: BuildVariant,
-    val options: ICleanOptions
-) :
-    CargoTaskProcessBase(project, settings, variant) {
+    variant: BuildVariant
+) : CargoTaskProcessBase<ICleanOptions>(project, settings, variant) {
     override fun call(tool: Cargo, builder: OptionBuilder) {
         tool.clean(builder)
     }
+
+    override val options: ICleanOptions
+        get() = variant.cleanOptions
 }

@@ -18,7 +18,7 @@ import kotlin.collections.mapNotNull
 import kotlin.collections.reversed
 import kotlin.collections.set
 
-class CargoConfig(val variant: BuildVariant, val args: List<ICargoConfig?>) :
+class CargoConfig(val target: String?, val args: List<ICargoConfig?>) :
     PriorityResolveBase<ICargoConfig>(args), ICargoConfig {
     //    override val paths: Iterable<String?>?
 //        get() = resolve { it.paths }
@@ -35,7 +35,7 @@ class CargoConfig(val variant: BuildVariant, val args: List<ICargoConfig?>) :
     override val cargoNew: CargoNew
         get() = CargoNew(args.map { it?.cargoNew })
     override val targetTriple: Triple
-        get() = Triple(variant.target, args.map { it?.targetTriple })
+        get() = Triple(target, args.map { it?.targetTriple })
     override val registry: Registry
         get() = Registry(args.map { it?.registry })
     override val http: Http

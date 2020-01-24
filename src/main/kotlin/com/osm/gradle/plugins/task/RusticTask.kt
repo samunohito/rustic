@@ -9,7 +9,7 @@ import org.gradle.api.tasks.TaskContainer
 import java.util.concurrent.ConcurrentHashMap
 
 open class RusticTask : DefaultTask() {
-    private lateinit var process: IRusticTaskProcess
+    private lateinit var process: IRusticTaskProcess<*>
 
     @TaskAction
     fun run() {
@@ -17,7 +17,7 @@ open class RusticTask : DefaultTask() {
     }
 
     companion object Factory {
-        fun obtain(tasks: TaskContainer, name: String, process: IRusticTaskProcess): Task {
+        fun obtain(tasks: TaskContainer, name: String, process: IRusticTaskProcess<*>): Task {
             val task = tasks.findByName(name) ?: tasks.create(name, RusticTask::class.java)
 
             task.group = TASK_GROUP_NAME

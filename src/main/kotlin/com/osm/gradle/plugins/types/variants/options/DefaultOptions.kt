@@ -1,10 +1,11 @@
 package com.osm.gradle.plugins.types.variants.options
 
-import com.osm.gradle.plugins.types.interfaces.options.ITestOptions
+import com.osm.gradle.plugins.types.interfaces.options.IDefaultOptions
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import com.osm.gradle.plugins.types.variants.options.option.Base
 
-class TestOptions(variant: BuildVariant, args: List<ITestOptions?>) : Base<ITestOptions>(variant, args), ITestOptions {
+class DefaultOptions(variant: BuildVariant, args: List<IDefaultOptions?>) : Base<IDefaultOptions>(variant, args),
+    IDefaultOptions {
     override val all: Boolean?
         get() = resolve { it.all }
     override val allFeatures: Boolean?
@@ -39,12 +40,20 @@ class TestOptions(variant: BuildVariant, args: List<ITestOptions?>) : Base<ITest
         get() = resolve { it.tests }
     override val workspace: Boolean?
         get() = resolve { it.workspace }
-    override val doc: Boolean?
-        get() = resolve { it.doc }
-    override val release: Boolean?
-        get() = resolve { it.release }
+    override val jobs: Int?
+        get() = resolve { it.jobs }
     override val noFailFast: Boolean?
         get() = resolve { it.noFailFast }
     override val noRun: Boolean?
         get() = resolve { it.noRun }
+    override val buildPlan: Boolean?
+        get() = resolve { it.buildPlan }
+    override val outDir: String?
+        get() = resolve { it.outDir }
+    override val release: Boolean?
+        get() = resolve { it.release }
+    override val profile: String?
+        get() = resolve { it.profile }
+    override val doc: Boolean?
+        get() = resolve { it.doc }
 }

@@ -2,6 +2,7 @@ package com.osm.gradle.plugins.process
 
 import com.osm.gradle.plugins.log.LoggerSupport
 import com.osm.gradle.plugins.types.ProjectSettings
+import com.osm.gradle.plugins.types.interfaces.options.option.IBase
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import com.osm.gradle.plugins.util.other.Common
 import com.osm.gradle.plugins.wrapper.RustToolBase
@@ -9,11 +10,11 @@ import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
 import com.osm.gradle.plugins.wrapper.builder.OptionHelper
 import org.gradle.api.Project
 
-abstract class RusticTaskProcessBase<T : RustToolBase>(
+abstract class RusticTaskProcessBase<T : RustToolBase, U : IBase>(
     protected val project: Project,
     protected val settings: ProjectSettings,
     protected val variant: BuildVariant
-) : IRusticTaskProcess, LoggerSupport {
+) : IRusticTaskProcess<U>, LoggerSupport {
     override fun run() {
         if (variant.enabled == true || variant.enabled == null) {
             val toolBase = createToolBase()
@@ -36,10 +37,7 @@ abstract class RusticTaskProcessBase<T : RustToolBase>(
             }
 
             val builder = OptionBuilder()
-
-            OptionHelper.put(variant, builder)
-            OptionHelper.put(settings, builder)
-
+            OptionHelper.put(options, builder)
             call(toolBase, builder)
         } else {
             info("The task associated with ${variant.name} has been disabled.")

@@ -20,7 +20,7 @@ class RusticPluginTest {
     fun setUp() {
         testProjectDir.create()
 
-        val srcJarPath = Paths.get("build/libs/rustic-0.1.2.jar")
+        val srcJarPath = Paths.get("build/libs/rustic-0.2.0.jar")
         val dstJarPath = Paths.get(testProjectDir.root.toPath().toString(), srcJarPath.fileName?.toString())
         Files.copy(srcJarPath, dstJarPath)
 
@@ -71,7 +71,6 @@ class RusticPluginTest {
             rustic {
                 projectSettings {
                     projectLocation = "${testProjectDir.root}"
-                    jobs 8
                 }
                 
                 $script
@@ -96,18 +95,18 @@ class RusticPluginTest {
     fun apply002() {
         val ret = run(
             """
-            defaultConfig {
+            defaultConfig.defaultOptions {
                 target "defaultConfig"
             }
             
             buildTypes {
-                niku {
+                niku.defaultOptions {
                     target "nikuBuild"
                 }
             }
             
             flavors {
-                test001 {
+                test001.defaultOptions {
                     target "test001"
                 }
                 
@@ -128,7 +127,7 @@ class RusticPluginTest {
                             AR: "/usr/bin/x86_64-w64-mingw32-gcc-ar",
                             CC: "/usr/bin/x86_64-w64-mingw32-gcc"
                     ]
-                    cargoConfig {
+                    defaultOptions.cargoConfig {
                         targetTriple {
                             linker environments["CC"]
                         }
@@ -137,7 +136,7 @@ class RusticPluginTest {
             }
             
             variants.all {
-                println("variant : " + it.name + ", target : " + it.target)
+                println("variant : " + it.name + ", target : " + it.defaultOptions.target)
             }
             
             tasks.all {

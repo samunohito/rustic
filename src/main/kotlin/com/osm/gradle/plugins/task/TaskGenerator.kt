@@ -3,10 +3,13 @@ package com.osm.gradle.plugins.task
 import com.osm.gradle.plugins.process.IRusticTaskProcess
 import com.osm.gradle.plugins.process.NothingTaskProcess
 import com.osm.gradle.plugins.process.cargo.*
+import com.osm.gradle.plugins.process.rustup.TargetAddTaskProcess
 import com.osm.gradle.plugins.types.ProjectSettings
-import com.osm.gradle.plugins.types.config.options.CleanOptions
+import com.osm.gradle.plugins.types.interfaces.options.option.IBase
 import com.osm.gradle.plugins.types.variants.BuildVariant
+import com.osm.gradle.plugins.util.string.toCamelCase
 import org.gradle.api.Project
+import org.gradle.api.Task
 
 class TaskGenerator(
     private val project: Project,
@@ -15,9 +18,15 @@ class TaskGenerator(
     private val nothingTaskProcess = NothingTaskProcess()
 
     fun createVariantTasks(variants: List<BuildVariant>) {
-        createVariantTasks("rustBuild", variants) { BuildTaskProcess(project, settings, it) }
-        createVariantTasks("rustCheck", variants) { CheckTaskProcess(project, settings, it) }
-        createVariantTasks("rustTest", variants) { TestTaskProcess(project, settings, it) }
+        if (variants.any { it.flavor != null }) {
+            createVariantTasksHasFlavor("rustBuild", variants) { BuildTaskProcess(project, settings, it) }
+            createVariantTasksHasFlavor("rustCheck", variants) { CheckTaskProcess(project, settings, it) }
+            createVariantTasksHasFlavor("rustTest", variants) { TestTaskProcess(project, settings, it) }
+        } else {
+            createVariantTasks("rustBuild", variants) { BuildTaskProcess(project, settings, it) }
+            createVariantTasks("rustCheck", variants) { CheckTaskProcess(project, settings, it) }
+            createVariantTasks("rustTest", variants) { TestTaskProcess(project, settings, it) }
+        }
 
         val benchList = variants
             .map { BuildVariant(project, settings, it.default, null, it.flavor) }
@@ -28,55 +37,53 @@ class TaskGenerator(
     private fun createVariantTasks(
         category: String,
         variants: List<BuildVariant>,
-        processGenerator: (BuildVariant) -> IRusticTaskProcess
+        processGenerator: (BuildVariant) -> IRusticTaskProcess<out IBase>
     ) {
         val root = RusticTask.obtain(project.tasks, category, nothingTaskProcess)
-
         variants.forEach { variant ->
             val process = processGenerator(variant)
-            if (variant.flavor == null) {
-                val subTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), process)
-                root.dependsOn(subTask)
-            } else {
-                val subTask = RusticTask.obtain(project.tasks, getParentTaskName(category, variant), nothingTaskProcess)
-                val subChildTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), process)
-                subTask.dependsOn(subChildTask)
-                root.dependsOn(subTask)
-            }
+            val subTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), process)
+            root.dependsOn(subTask)
+
+            createTargetAddTask(variant, process.options, subTask)
+        }
+    }
+
+    private fun createVariantTasksHasFlavor(
+        category: String,
+        variants: List<BuildVariant>,
+        processGenerator: (BuildVariant) -> IRusticTaskProcess<out IBase>
+    ) {
+        val root = RusticTask.obtain(project.tasks, category, nothingTaskProcess)
+        variants.forEach { variant ->
+            val process = processGenerator(variant)
+            val subTask = RusticTask.obtain(project.tasks, getParentTaskName(category, variant), nothingTaskProcess)
+            val subChildTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), process)
+            subTask.dependsOn(subChildTask)
+            root.dependsOn(subTask)
+
+            createTargetAddTask(variant, process.options, subChildTask)
+        }
+    }
+
+    private fun createTargetAddTask(variant: BuildVariant, options: IBase, bind: Task) {
+        options.target?.also { target ->
+            val prefix = "rustTargetAdd"
+
+            val process = TargetAddTaskProcess(project, settings, variant, options)
+            val name = prefix + target.toCamelCase('_').toCamelCase('-').capitalize()
+            val task = RusticTask.obtain(project.tasks, name, process)
+            bind.dependsOn(task)
+
+            val root = RusticTask.obtain(project.tasks, prefix, nothingTaskProcess)
+            root.dependsOn(task)
         }
     }
 
     fun createCleanTasks() {
         val prefix = "rustClean"
-
-        val process = CleanTaskProcess(
-            project,
-            settings,
-            BuildVariant(project, settings),
-            CleanOptions()
-        )
+        val process = CleanTaskProcess(project, settings, BuildVariant(project, settings))
         RusticTask.obtain(project.tasks, prefix, process)
-//
-//        val docOptions = CleanOptions()
-//        docOptions.doc = true
-//        CleanTargetTask.create("${prefix}Doc", this, CleanOptions())
-//
-//        val releaseOptions = CleanOptions()
-//        releaseOptions.release = true
-//        CleanTargetTask.create("${prefix}Release", this, CleanOptions())
-//
-//        val cleanTriple = TaskUtility.generate(config.tasks,("${prefix}Triple"))
-//        variants.mapNotNull { it.config }.forEach {
-//            val opt = CleanOptions()
-//            opt.triple = it.triple
-//            cleanTriple.dependsOn(
-//                CleanTargetTask.create(
-//                    "${cleanTriple.name}${it.name.capitalize()}",
-//                    this@Rustic,
-//                    opt
-//                )
-//            )
-//        }
     }
 
     private fun getParentTaskName(category: String, variant: BuildVariant) =

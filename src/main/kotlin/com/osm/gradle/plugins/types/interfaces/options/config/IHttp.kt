@@ -19,11 +19,11 @@ interface IHttp {
      */
     val checkRevoke: String?
     /**
-     * Indicates which SSL version or above to use (options are
+     * Indicates which SSL version or above to use (command are
      * "default", "tlsv1", "tlsv1.0", "tlsv1.1", "tlsv1.2", "tlsv1.3")
      * To better control SSL version, we can even use
      * `ssl-version.min = "..."` and `ssl-version.max = "..."`
-     * where "..." is one of the above options. But note these two forms
+     * where "..." is one of the above command. But note these two forms
      * ("setting `ssl-version`" and "setting both `min`/`max`)
      * can't co-exist.
      */

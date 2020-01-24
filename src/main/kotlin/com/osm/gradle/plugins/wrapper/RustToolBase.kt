@@ -57,7 +57,7 @@ abstract class RustToolBase {
      * Run external applications synchronously. Wait for the executed application to complete.
      *
      * @param commands Arguments to pass to the external application. Options must be passed as items in a list, not separated by spaces.
-     * @param options Sets the builder for creating options.
+     * @param options Sets the builder for creating command.
      */
     @Throws(ProcessingFailedException::class)
     protected fun run(commands: List<String>, options: OptionBuilder): String {
@@ -68,7 +68,7 @@ abstract class RustToolBase {
      * Run external applications synchronously. Wait for the executed application to complete.
      *
      * @param command Arguments to pass to the external application. Options must be passed as items in a list, not separated by spaces.
-     * @param options Sets the builder for creating options.
+     * @param options Sets the builder for creating command.
      */
     @Throws(ProcessingFailedException::class)
     protected fun run(command: String, options: OptionBuilder): String {

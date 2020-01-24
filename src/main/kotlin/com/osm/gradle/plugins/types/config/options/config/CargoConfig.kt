@@ -7,7 +7,7 @@ import groovy.lang.Closure
 
 open class CargoConfig : RusticConfigurableBase(), ICargoConfig {
     //    override var paths: Iterable<String?>? = ArrayList()
-    override var registries: Map<String, String>? = HashMap()
+    override var registries: Map<String?, String?>? = HashMap()
 
     override var cargoNew: CargoNew = CargoNew()
     override var targetTriple: Triple = Triple()
@@ -21,7 +21,7 @@ open class CargoConfig : RusticConfigurableBase(), ICargoConfig {
 //        paths = value
 //    }
 
-    open fun registries(value: Map<String, String>?) {
+    open fun registries(value: Map<String?, String?>?) {
         registries = value
     }
 

@@ -5,9 +5,6 @@ import com.osm.gradle.plugins.types.ProjectSettings
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import com.osm.gradle.plugins.wrapper.Cargo
 import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
-import com.osm.gradle.plugins.wrapper.builder.helpers.cargo.OptionsHelper
-import com.osm.gradle.plugins.wrapper.builder.helpers.cargo.SelectionHelper
-import com.osm.gradle.plugins.wrapper.builder.helpers.cargo.TestOptionsHelper
 import org.gradle.api.Project
 
 open class TestTaskProcess(
@@ -22,14 +19,7 @@ open class TestTaskProcess(
         super.run()
     }
 
-    override fun call(tool: Cargo) {
-        val builder = OptionBuilder()
-
-        OptionsHelper().put(variant, builder)
-        OptionsHelper().put(settings, builder)
-        SelectionHelper().put(variant, builder)
-        TestOptionsHelper().put(variant, builder)
-
+    override fun call(tool: Cargo, builder: OptionBuilder) {
         tool.test(builder)
     }
 }

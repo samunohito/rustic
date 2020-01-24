@@ -5,6 +5,8 @@ import com.osm.gradle.plugins.types.ProjectSettings
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import com.osm.gradle.plugins.util.other.Common
 import com.osm.gradle.plugins.wrapper.RustToolBase
+import com.osm.gradle.plugins.wrapper.builder.OptionBuilder
+import com.osm.gradle.plugins.wrapper.builder.OptionHelper
 import org.gradle.api.Project
 
 abstract class RusticTaskProcessBase<T : RustToolBase>(
@@ -17,15 +19,28 @@ abstract class RusticTaskProcessBase<T : RustToolBase>(
             val toolBase = createToolBase()
 
             toolBase.workingDirectory = Common.getWorkingDirectory(project.projectDir, settings.projectLocation)
-            toolBase.additionalEnvironment.putAll(variant.environments)
-
             debug("[workingDirectory] ${toolBase.workingDirectory}")
-            debug("[environments]")
-            variant.environments.forEach {
-                debug("  ${it.key} : ${it.value}")
+
+            if (!variant.environments.isNullOrEmpty()) {
+                toolBase.additionalEnvironment.putAll(
+                    variant.environments!!
+                        .filter { it.key != null && it.value != null }
+                        .mapKeys { it.key!! }
+                        .mapValues { it.value!! }
+                )
+
+                debug("[environments]")
+                variant.environments!!.forEach {
+                    debug("  ${it.key} : ${it.value}")
+                }
             }
 
-            call(toolBase)
+            val builder = OptionBuilder()
+
+            OptionHelper.put(variant, builder)
+            OptionHelper.put(settings, builder)
+
+            call(toolBase, builder)
         } else {
             info("The task associated with ${variant.name} has been disabled.")
         }
@@ -40,5 +55,5 @@ abstract class RusticTaskProcessBase<T : RustToolBase>(
      * This function is called when RusticTask is executed.
      * Not executed when BuildVariant # enable is false.
      */
-    abstract fun call(tool: T)
+    abstract fun call(tool: T, builder: OptionBuilder)
 }

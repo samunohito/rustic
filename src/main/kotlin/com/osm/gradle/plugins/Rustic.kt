@@ -58,11 +58,11 @@ open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
         // ----------------------------------------------------------------
 
         val debugOptions = ConfigBase.Factory(extensions, BuildTypeConfig::class.java).create("debug")
-        debugOptions.buildOptions.debug = true
+//        debugOptions.buildOptions.debug = true
         buildTypes.add(debugOptions)
 
         val releaseOptions = ConfigBase.Factory(extensions, BuildTypeConfig::class.java).create("release")
-        releaseOptions.buildOptions.debug = false
+//        releaseOptions.buildOptions.debug = false
         buildTypes.add(releaseOptions)
     }
 

@@ -1,6 +1,6 @@
 package com.osm.gradle.plugins.wrapper.builder
 
-import com.osm.gradle.plugins.wrapper.builder.options.ICommandOption
+import com.osm.gradle.plugins.wrapper.builder.command.ICommandOption
 
 class OptionBuilder {
     private val options = ArrayList<ICommandOption>()

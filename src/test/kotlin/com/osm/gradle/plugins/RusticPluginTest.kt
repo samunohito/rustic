@@ -1,6 +1,5 @@
 package com.osm.gradle.plugins
 
-import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.After
 import org.junit.Before
@@ -21,7 +20,7 @@ class RusticPluginTest {
     fun setUp() {
         testProjectDir.create()
 
-        val srcJarPath = Paths.get("build/libs/rustic-0.1.0.jar")
+        val srcJarPath = Paths.get("build/libs/rustic-0.1.2.jar")
         val dstJarPath = Paths.get(testProjectDir.root.toPath().toString(), srcJarPath.fileName?.toString())
         Files.copy(srcJarPath, dstJarPath)
 
@@ -88,7 +87,13 @@ class RusticPluginTest {
     }
 
     @Test
-    fun apply() {
+    fun apply001() {
+        val ret = run("")
+        println(ret.joinToString("\n"))
+    }
+
+    @Test
+    fun apply002() {
         val ret = run(
             """
             defaultConfig {

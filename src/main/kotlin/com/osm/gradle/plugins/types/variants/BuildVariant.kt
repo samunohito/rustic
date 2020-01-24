@@ -1,15 +1,12 @@
 package com.osm.gradle.plugins.types.variants
 
-import com.osm.gradle.pSelectionlugins.types.variants.options.CheckOptions
+import com.osm.gradle.plugins.types.variants.options.CheckOptions
 import com.osm.gradle.plugins.types.ProjectSettings
 import com.osm.gradle.plugins.types.config.BuildTypeConfig
 import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.interfaces.IConfigBase
-import com.osm.gradle.plugins.types.variants.options.BenchOptions
-import com.osm.gradle.plugins.types.variants.options.BuildOptions
-import com.osm.gradle.plugins.types.variants.options.Selection
-import com.osm.gradle.plugins.types.variants.options.TestOptions
+import com.osm.gradle.plugins.types.variants.options.*
 import com.osm.gradle.plugins.types.variants.options.config.CargoConfig
 import com.osm.gradle.plugins.util.other.Common
 import com.osm.gradle.plugins.util.string.toCamelCase
@@ -34,11 +31,13 @@ class BuildVariant(
             }
             .capitalize()
 
-    override val environments: MutableMap<String, String>
+    override val environments: Map<String?, String?>?
         get() {
-            val ret = HashMap<String, String>()
+            val ret = HashMap<String?, String?>()
             targets.filterNotNull().reversed().forEach {
-                ret.putAll(it.environments)
+                it.environments?.also { map ->
+                    ret.putAll(map)
+                }
             }
 
             return ret
@@ -50,11 +49,9 @@ class BuildVariant(
         get() = resolve { it.targetDir }
     override val target: String?
         get() = resolve { it.target }
-    override val features: Iterable<String>?
+    override val features: Iterable<String?>?
         get() = resolve { it.features }
 
-    override val targetSelection: Selection
-        get() = Selection(listOf(flavor?.targetSelection, build?.targetSelection, default?.targetSelection))
     override val buildOptions: BuildOptions
         get() = BuildOptions(listOf(flavor?.buildOptions, build?.buildOptions, default?.buildOptions))
     override val checkOptions: CheckOptions
@@ -63,6 +60,8 @@ class BuildVariant(
         get() = TestOptions(listOf(flavor?.testOptions, build?.testOptions, default?.testOptions))
     override val benchOptions: BenchOptions
         get() = BenchOptions(listOf(flavor?.benchOptions, build?.benchOptions, default?.benchOptions))
+    override val cleanOptions: CleanOptions
+        get() = CleanOptions(listOf(flavor?.cleanOptions, build?.cleanOptions, default?.cleanOptions))
     override val cargoConfig: CargoConfig
         get() = CargoConfig(this, listOf(flavor?.cargoConfig, build?.cargoConfig, default?.cargoConfig))
 
@@ -86,7 +85,7 @@ class BuildVariant(
                 Paths.get(Common.getWorkingDirectory(project.projectDir, settings.projectLocation).toString(), "target")
             }
 
-            val buildTypeString = if (buildOptions.debug == false) "release" else "debug"
+            val buildTypeString = "debug"//if (buildOptions.debug == false) "release" else "debug"
 
             return if (target != null) {
                 Paths.get(intermediates.toString(), target, buildTypeString)

@@ -7,7 +7,7 @@ interface ICargoConfig {
     val cargoNew: ICargoNew
     val targetTriple: ITriple
     val registry: IRegistry
-    val registries: Map<String, String>?
+    val registries: Map<String?, String?>?
     val http: IHttp
     val build: IBuild
     val term: ITerm

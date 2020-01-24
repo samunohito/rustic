@@ -6,7 +6,7 @@ plugins {
 }
 
 object Define {
-    const val PLUGIN_VERSION = "0.1.1"
+    const val PLUGIN_VERSION = "0.1.6"
     const val PLUGIN_ID = "com.osm.gradle.plugins.rustic"
     const val PLUGIN_IMPLEMENTATION_CLASS = "com.osm.gradle.plugins.RusticPlugin"
     const val PLUGIN_GROUP = "com.osm.gradle.plugins"
@@ -26,6 +26,14 @@ tasks {
     val dokka by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
         outputFormat = "html"
         outputDirectory = "$buildDir/javadoc"
+    }
+
+    getByName("compileKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class) {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+
+    getByName("compileTestKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class) {
+        kotlinOptions.jvmTarget = "1.8"
     }
 }
 
@@ -77,9 +85,7 @@ repositories {
 dependencies {
     "implementation"(gradleApi())
     "implementation"(localGroovy())
-    "implementation"("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     "testImplementation"(group = "junit", name = "junit", version = "4.12")
-    "testImplementation"(group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version = "1.3.21")
     "testImplementation"(gradleTestKit())
 }
 

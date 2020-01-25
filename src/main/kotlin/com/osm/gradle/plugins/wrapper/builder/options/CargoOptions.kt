@@ -21,7 +21,7 @@ object CargoOptions {
     }
 
     class Target(target: String) : SingleCommandOptionBase(target) {
-        override val option: String = "--triple"
+        override val option: String = "--target"
         override val hasValue: Boolean = true
     }
 

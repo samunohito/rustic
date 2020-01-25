@@ -49,27 +49,27 @@ class BuildVariant(
     override val buildOptions: BuildOptions
         get() = BuildOptions(
             this,
-            listOf(flavor?.buildOptions, build?.buildOptions, default?.buildOptions)
+            listOf(defaultOptions, flavor?.buildOptions, build?.buildOptions, default?.buildOptions)
         )
     override val checkOptions: CheckOptions
         get() = CheckOptions(
             this,
-            listOf(flavor?.checkOptions, build?.checkOptions, default?.checkOptions)
+            listOf(defaultOptions, flavor?.checkOptions, build?.checkOptions, default?.checkOptions)
         )
     override val testOptions: TestOptions
         get() = TestOptions(
             this,
-            listOf(flavor?.testOptions, build?.testOptions, default?.testOptions)
+            listOf(defaultOptions, flavor?.testOptions, build?.testOptions, default?.testOptions)
         )
     override val benchOptions: BenchOptions
         get() = BenchOptions(
             this,
-            listOf(flavor?.benchOptions, build?.benchOptions, default?.benchOptions)
+            listOf(defaultOptions, flavor?.benchOptions, build?.benchOptions, default?.benchOptions)
         )
     override val cleanOptions: CleanOptions
         get() = CleanOptions(
             this,
-            listOf(flavor?.cleanOptions, build?.cleanOptions, default?.cleanOptions)
+            listOf(defaultOptions, flavor?.cleanOptions, build?.cleanOptions, default?.cleanOptions)
         )
 
     val parentName: String

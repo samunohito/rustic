@@ -40,7 +40,8 @@ class TaskGenerator(
         processGenerator: (BuildVariant) -> IRusticTaskProcess<out IBase>
     ) {
         val root = RusticTask.obtain(project.tasks, category, nothingTaskProcess)
-        variants.forEach { variant ->
+
+        variants.filter { it.flavor == null }.forEach { variant ->
             val process = processGenerator(variant)
             val subTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), process)
             root.dependsOn(subTask)
@@ -55,12 +56,21 @@ class TaskGenerator(
         processGenerator: (BuildVariant) -> IRusticTaskProcess<out IBase>
     ) {
         val root = RusticTask.obtain(project.tasks, category, nothingTaskProcess)
-        variants.forEach { variant ->
+
+        val subTaskMap = variants.filter { it.flavor == null }.associateBy({ it.name }) {
+            RusticTask.obtain(project.tasks, getTaskName(category, it), nothingTaskProcess)
+        }
+
+        subTaskMap.values.forEach {
+            root.dependsOn(it)
+        }
+
+        variants.filter { it.flavor != null }.forEach { variant ->
             val process = processGenerator(variant)
-            val subTask = RusticTask.obtain(project.tasks, getParentTaskName(category, variant), nothingTaskProcess)
             val subChildTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), process)
+
+            val subTask = subTaskMap[variant.parentName] ?: error("invalid subTask name.")
             subTask.dependsOn(subChildTask)
-            root.dependsOn(subTask)
 
             createTargetAddTask(variant, process.options, subChildTask)
         }
@@ -74,9 +84,6 @@ class TaskGenerator(
             val name = prefix + target.toCamelCase('_').toCamelCase('-').capitalize()
             val task = RusticTask.obtain(project.tasks, name, process)
             bind.dependsOn(task)
-
-            val root = RusticTask.obtain(project.tasks, prefix, nothingTaskProcess)
-            root.dependsOn(task)
         }
     }
 
@@ -86,8 +93,11 @@ class TaskGenerator(
         RusticTask.obtain(project.tasks, prefix, process)
     }
 
-    private fun getParentTaskName(category: String, variant: BuildVariant) =
-        (category + variant.parentName)
+    private fun getParentTaskName(category: String, variant: BuildVariant): String {
+        return (category + variant.parentName)
+    }
 
-    private fun getTaskName(category: String, variant: BuildVariant) = (category + variant.name)
+    private fun getTaskName(category: String, variant: BuildVariant): String {
+        return (category + variant.name)
+    }
 }

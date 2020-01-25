@@ -136,7 +136,7 @@ class RusticPluginTest {
             }
             
             variants.all {
-                println("variant : " + it.name + ", target : " + it.defaultOptions.target)
+                //println("variant : " + it.name + ", target : " + it.defaultOptions.target)
             }
             
             tasks.all {

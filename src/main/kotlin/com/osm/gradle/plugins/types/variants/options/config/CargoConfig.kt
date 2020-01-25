@@ -47,6 +47,7 @@ class CargoConfig(val target: String?, val args: List<ICargoConfig?>) :
     override val net: Net
         get() = Net(args.map { it?.net })
 
+
     fun getConfigMap(): Map<String, String> {
         val ret = HashMap<String, String>()
 

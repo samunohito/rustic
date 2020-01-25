@@ -1,7 +1,5 @@
 package com.osm.gradle.plugins
 
-import com.osm.gradle.plugins.task.RusticTask
-import com.osm.gradle.plugins.task.TaskGenerator
 import com.osm.gradle.plugins.types.ProjectSettings
 import com.osm.gradle.plugins.types.config.BuildTypeConfig
 import com.osm.gradle.plugins.types.config.ConfigBase
@@ -10,12 +8,14 @@ import com.osm.gradle.plugins.types.config.ProductFlavorConfig
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import groovy.lang.Closure
 import groovy.lang.GroovyObjectSupport
-import org.gradle.api.*
+import org.gradle.api.DomainObjectSet
+import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Project
 import org.gradle.api.internal.CollectionCallbackActionDecorator
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.plugins.ExtensionAware
 
-open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
+open class Rustic(val name: String, val project: Project) : GroovyObjectSupport() {
     val projectSettings: ProjectSettings
     val defaultConfig: DefaultConfig
     val buildTypes: NamedDomainObjectContainer<BuildTypeConfig>
@@ -65,10 +65,10 @@ open class Rustic(val name: String, project: Project) : GroovyObjectSupport() {
         buildTypes.add(debugOptions)
 
         val releaseOptions = ConfigBase.Factory(extensions, BuildTypeConfig::class.java).create("release")
-        debugOptions.buildOptions.release = true
-        debugOptions.cleanOptions.release = true
-        debugOptions.testOptions.release = true
-        debugOptions.cleanOptions.release = true
+        releaseOptions.buildOptions.release = true
+        releaseOptions.cleanOptions.release = true
+        releaseOptions.testOptions.release = true
+        releaseOptions.cleanOptions.release = true
         buildTypes.add(releaseOptions)
     }
 

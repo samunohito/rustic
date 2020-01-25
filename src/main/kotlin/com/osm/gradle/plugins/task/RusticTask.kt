@@ -4,9 +4,9 @@ import com.osm.gradle.plugins.TASK_GROUP_NAME
 import com.osm.gradle.plugins.process.IRusticTaskProcess
 import org.gradle.api.DefaultTask
 import org.gradle.api.Task
+import org.gradle.api.internal.AbstractTask
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskContainer
-import java.util.concurrent.ConcurrentHashMap
 
 open class RusticTask : DefaultTask() {
     private lateinit var process: IRusticTaskProcess<*>
@@ -25,6 +25,10 @@ open class RusticTask : DefaultTask() {
 
             if (task is RusticTask) {
                 task.process = process
+            }
+
+            if (task is AbstractTask) {
+                task.taskActions.clear()
             }
 
             return task

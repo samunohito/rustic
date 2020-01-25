@@ -11,12 +11,16 @@ class RusticProjectEvaluationListener(private val rustic: Rustic) : ProjectEvalu
     private val variantsInternal = ArrayList<BuildVariant>()
 
     override fun beforeEvaluate(project: Project) {
+        if (project.name != rustic.project.name) {
+            return
+        }
+
         rustic.variants.clear()
         RusticTask.disableAll(project.tasks)
     }
 
     override fun afterEvaluate(project: Project, state: ProjectState) {
-        if (state.failure != null) {
+        if (project.name != rustic.project.name || state.failure != null) {
             return
         }
 

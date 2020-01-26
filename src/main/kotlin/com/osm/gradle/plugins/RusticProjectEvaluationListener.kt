@@ -24,10 +24,16 @@ class RusticProjectEvaluationListener(private val rustic: Rustic) : ProjectEvalu
             return
         }
 
+        evaluateLogLevel(project)
         generateVariants(project)
         generateTasks(project)
 
         rustic.variants.addAll(variantsInternal)
+    }
+
+    private fun evaluateLogLevel(project: Project) {
+        project.logging.captureStandardOutput(rustic.projectSettings.captureStandardOutput)
+        project.logging.captureStandardError(rustic.projectSettings.captureStandardError)
     }
 
     private fun generateVariants(project: Project) {
@@ -45,7 +51,7 @@ class RusticProjectEvaluationListener(private val rustic: Rustic) : ProjectEvalu
 
     private fun generateTasks(project: Project) {
         rustic.apply {
-            val taskGenerator = TaskGenerator(project, projectSettings)
+            val taskGenerator = TaskGenerator(project, projectSettings, defaultConfig)
             taskGenerator.createCleanTasks()
             taskGenerator.createVariantTasks(variantsInternal)
         }

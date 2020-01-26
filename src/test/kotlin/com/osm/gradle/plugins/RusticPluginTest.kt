@@ -1,5 +1,6 @@
 package com.osm.gradle.plugins
 
+import javafx.concurrent.Task
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.After
 import org.junit.Before
@@ -20,7 +21,7 @@ class RusticPluginTest {
     fun setUp() {
         testProjectDir.create()
 
-        val srcJarPath = Paths.get("build/libs/rustic-0.2.0.jar")
+        val srcJarPath = Paths.get("build/libs/rustic-0.2.6.jar")
         val dstJarPath = Paths.get(testProjectDir.root.toPath().toString(), srcJarPath.fileName?.toString())
         Files.copy(srcJarPath, dstJarPath)
 
@@ -82,6 +83,8 @@ class RusticPluginTest {
             .withProjectDir(testProjectDir.root)
             .build()
 
+        println(result.tasks.joinToString(", ") { it.toString() })
+
         return result.output.lines()
     }
 
@@ -140,7 +143,7 @@ class RusticPluginTest {
             }
             
             tasks.all {
-                println("task : " + it.name)
+                //println("task : " + it.name)
             }
         """.trimIndent()
         )

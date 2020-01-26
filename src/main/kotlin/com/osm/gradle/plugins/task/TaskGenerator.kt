@@ -5,33 +5,41 @@ import com.osm.gradle.plugins.process.NothingTaskProcess
 import com.osm.gradle.plugins.process.cargo.*
 import com.osm.gradle.plugins.process.rustup.TargetAddTaskProcess
 import com.osm.gradle.plugins.types.ProjectSettings
+import com.osm.gradle.plugins.types.config.DefaultConfig
 import com.osm.gradle.plugins.types.interfaces.options.option.IBase
 import com.osm.gradle.plugins.types.variants.BuildVariant
 import com.osm.gradle.plugins.util.string.toCamelCase
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.internal.AbstractTask
 
 class TaskGenerator(
     private val project: Project,
-    private val settings: ProjectSettings
+    private val settings: ProjectSettings,
+    private val defaultConfig: DefaultConfig
 ) {
     private val nothingTaskProcess = NothingTaskProcess()
 
     fun createVariantTasks(variants: List<BuildVariant>) {
+        if (variants.isEmpty()) {
+            return
+        }
+
         if (variants.any { it.flavor != null }) {
             createVariantTasksHasFlavor("rustBuild", variants) { BuildTaskProcess(project, settings, it) }
             createVariantTasksHasFlavor("rustCheck", variants) { CheckTaskProcess(project, settings, it) }
             createVariantTasksHasFlavor("rustTest", variants) { TestTaskProcess(project, settings, it) }
+
+            val benchList = variants
+                .map { BuildVariant(project, settings, it.default, null, it.flavor) }
+                .distinctBy { it.name }
+            createBenchTasksHasFlavor(benchList)
         } else {
             createVariantTasks("rustBuild", variants) { BuildTaskProcess(project, settings, it) }
             createVariantTasks("rustCheck", variants) { CheckTaskProcess(project, settings, it) }
             createVariantTasks("rustTest", variants) { TestTaskProcess(project, settings, it) }
+            createBenchTasks()
         }
-
-        val benchList = variants
-            .map { BuildVariant(project, settings, it.default, null, it.flavor) }
-            .distinctBy { it.name }
-        createVariantTasks("rustBench", benchList) { BenchTaskProcess(project, settings, it) }
     }
 
     private fun createVariantTasks(
@@ -41,7 +49,7 @@ class TaskGenerator(
     ) {
         val root = RusticTask.obtain(project.tasks, category, nothingTaskProcess)
 
-        variants.filter { it.flavor == null }.forEach { variant ->
+        variants.forEach { variant ->
             val process = processGenerator(variant)
             val subTask = RusticTask.obtain(project.tasks, getTaskName(category, variant), process)
             root.dependsOn(subTask)
@@ -73,6 +81,27 @@ class TaskGenerator(
             subTask.dependsOn(subChildTask)
 
             createTargetAddTask(variant, process.options, subChildTask)
+        }
+    }
+
+    private fun createBenchTasks() {
+        val prefix = "rustBench"
+        val variant = BuildVariant(project, settings, defaultConfig, null, null)
+        val process = BenchTaskProcess(project, settings, variant)
+        val root = RusticTask.obtain(project.tasks, prefix, process)
+        createTargetAddTask(variant, process.options, root)
+    }
+
+    private fun createBenchTasksHasFlavor(variants: List<BuildVariant>) {
+        val prefix = "rustBench"
+        val root = RusticTask.obtain(project.tasks, prefix, nothingTaskProcess)
+
+        variants.filter { it.flavor != null }.forEach { variant ->
+            val process = BenchTaskProcess(project, settings, variant)
+            val subTask = RusticTask.obtain(project.tasks, getTaskName(prefix, variant), process)
+            root.dependsOn(subTask)
+
+            createTargetAddTask(variant, process.options, subTask)
         }
     }
 

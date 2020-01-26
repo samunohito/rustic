@@ -40,6 +40,16 @@ class CargoTest {
             pub fn test() {
                 println!("test")
             }
+            
+            #[test]
+            pub fn testtest1() {
+                println!("testtest1")
+            }
+            
+            #[test]
+            pub fn testtest2() {
+                println!("testtest2")
+            }
             """.trimIndent()
         )
 
@@ -54,12 +64,21 @@ class CargoTest {
     @Test
     fun build() {
         val config = DefaultConfig()
-        config.buildOptions.targetDir = ""
 
         val b = OptionBuilder()
         OptionHelper.put(config, b)
 
         cargo.build(b)
+    }
+
+    @Test
+    fun test() {
+        val config = DefaultConfig()
+
+        val b = OptionBuilder()
+        OptionHelper.put(config, b)
+
+        cargo.test(b)
     }
 
     @Test

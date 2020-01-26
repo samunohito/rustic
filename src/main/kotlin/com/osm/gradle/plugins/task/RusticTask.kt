@@ -27,10 +27,6 @@ open class RusticTask : DefaultTask() {
                 task.process = process
             }
 
-            if (task is AbstractTask) {
-                task.taskActions.clear()
-            }
-
             return task
         }
 

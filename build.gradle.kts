@@ -6,7 +6,7 @@ plugins {
 }
 
 object Define {
-    const val PLUGIN_VERSION = "0.2.6"
+    const val PLUGIN_VERSION = "0.2.7"
     const val PLUGIN_ID = "com.osm.gradle.plugins.rustic"
     const val PLUGIN_IMPLEMENTATION_CLASS = "com.osm.gradle.plugins.RusticPlugin"
     const val PLUGIN_GROUP = "com.osm.gradle.plugins"

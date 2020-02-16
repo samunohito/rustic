@@ -17,6 +17,7 @@ abstract class RusticTaskProcessBase<T : RustToolBase, U : IBase>(
     override fun run() {
         if (variant.enabled == false) {
             info("The task associated with ${variant.name} has been disabled.")
+            return
         }
 
         val toolBase = createToolBase()
